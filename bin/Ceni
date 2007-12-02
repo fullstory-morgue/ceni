@@ -1,0 +1,1464 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use FindBin;
+
+if ($> != 0 and not @ARGV or (@ARGV and $ARGV[0] ne '--no-act')) {
+	print "Ceni requires root priviledges! Be careful!\n";
+	exec("su", "root", "-c", "$FindBin::Bin/$FindBin::Script @ARGV");
+}
+
+use lib "$FindBin::RealBin/../lib";
+use Ceni::Backend;
+
+use Data::Dumper;
+use Curses::UI;
+use Getopt::Long;
+use Term::ReadKey;
+
+#===============================================#
+my $dbg = 0;
+my $eni = '/etc/network/interfaces';
+my $act = 1;
+
+my $iface;
+my $wcell;
+
+my %conf;
+
+#===============================================#
+GetOptions(
+	'act!'    => \$act,
+	'debug'   => \$dbg,
+	'file=s'  => \$eni,
+	'iface=s' => \$iface,
+);
+
+my $ceni = new Curses::UI(
+	-color_support => 1,
+	-mouse_support => 1,
+	-clear_on_exit => 1,
+);
+
+$ceni->set_binding(sub { exit 1; }, "\cC", "\cQ");
+
+my $bend = new Ceni::Backend({
+	act   => $act,
+	debug => $dbg,
+	file  => $eni,
+});
+
+#===============================================#
+#%conf = (
+#	'method' => 'static',
+#	'class' => 'auto',
+#	'stanza' => {
+#		'network' => '192.168.1.0',
+#		'gateway' => '192.168.1.254',
+#		'wpa-ssid' => 'kelnet',
+#		'wpa-psk' => 'mypasswd',
+#		'broadcast' => '192.168.0.255',
+#		'dns-nameservers' => '192.168.0.254',
+#		'address' => '192.168.1.99',
+#		'netmask' => '255.255.255.0'
+#	},
+#	'pre-up' => [
+#		'/path/to/script -i eth2',
+#	],
+#	'comment' => [
+#		"\t#wpa-psk myoldpasswd",
+#		"\t#wpa-foo bar
+#	],
+#);
+#
+#$bend->set_iface_conf("eth2", \%conf);
+#
+
+#===============================================#
+sub redirect_stderr {
+	open OLDERR, '>&', \*STDERR or die "E: Failed to dup STDERR to OLDERR: $!";
+	my $log = $dbg ? '/tmp/ceni.log' : '/dev/null';
+	open STDERR, '>', $log or die "E: Failed to redirect STDERR to $log: $!";
+}
+
+sub restore_stderr {
+	close STDERR or die "E: Failed to close STDERR: $!";
+	open STDERR, '>&', \*OLDERR or die "E: Failed to restore stderr: $!";
+	close OLDERR or die "E: Failed to close OLDERR: $!";
+}
+
+sub is_ip {
+	my $string = shift or return;
+
+	$string =~
+	        m/^([01]?\d\d?|2[0-4]\d|25[0-5])\.([01]?\d\d?|2[0-4]\d|25[0-5])\.([01]?\d\d?|2[0-4]\d|25[0-5])\.([01]?\d\d?|2[0-4]\d|25[0-5])$/
+	        and return 1;
+
+	return 0;
+}
+
+sub is_hex {
+	my $string = shift;
+
+	$string =~ /[^A-F0-9]/i and return 0;
+
+	return 1;
+}
+
+sub psk_is_valid {
+	my ($enc, $psk) = (shift, shift);
+	my $psk_len     = length $psk;
+
+	if ($enc eq 'WEP') {
+		if (is_hex($psk) and $psk_len =~ m/^(10|26|32|58)$/) {
+			return 1;
+		}
+		elsif ($psk_len >= 5) {
+			return 1;
+		}
+	}
+	elsif ($enc eq 'WPA') {
+		if (is_hex($psk) and $psk_len == 64) {
+			return 1;
+		}
+		elsif ($psk_len >= 8 and $psk_len <= 63) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+sub interface_form {
+	if ($iface) {
+		if ($bend->is_nic_valid($iface)) {
+			return 1;
+		}
+		else {
+			$ceni->error("$iface does not exist!");
+			return 0;
+		}
+	}
+	elsif (not keys %{ $bend->get_nic_info }) {
+		$ceni->error('No network interfaces to configure!');
+		return 0;
+	}
+
+	my @i = sort keys %{ $bend->get_nic_info };
+	my %i;
+
+	for my $if (@i) {
+		$i{$if} = $bend->get_nic_info($if)->{'info'};
+	}
+
+	my $interface_form = $ceni->add(
+		'interface_form', 'Window',
+		-title  => 'Network Interfaces',
+		-border => 1,
+		-bfg    => 'green',
+		-tfg    => 'green',
+	);
+
+	$interface_form->add(
+		'interface_title', 'TextEntry',
+		-text      => 'Choose a network interface to configure:',
+		-border    => 0,
+		-x         => 3,
+		-y         => 2,
+		-width     => 50,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	my $interface_list = $interface_form->add(
+		'interface_list', 'Listbox',
+		-border     => 1,
+		-bfg        => 'green',
+		-wraparound => 1,
+		-x          => 1,
+		-y          => 4,
+		-width      => 76,
+		-height     => 13,
+		-values     => \@i,
+		-labels     => \%i,
+		-onchange   => sub { shift->parent->loose_focus; },
+	);
+
+	my $exit = $interface_form->add(
+		'exit',
+		'Buttonbox',
+		-x       => 30,
+		-y       => 17,
+		-width   => 12,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [{
+				-label   => '[  Exit  ]',
+				-onpress => sub { exit 0; }
+			},
+		],
+	);
+
+	$interface_list->focus;
+	$interface_form->set_binding(sub { exit 1; }, "\cC", "\cQ");
+	$interface_form->modalfocus;
+	$ceni->delete('interface_form');
+
+	$iface = $interface_list->get;
+
+	return 1;
+}
+
+sub configure_form {
+	my $current = $bend->get_iface_conf($iface);
+
+	unless ($iface and $current->{'method'}) {
+		return 1;
+	}
+
+	my $continue = 0;
+
+	my $configure_form = $ceni->add(
+		'configure_form', 'Window',
+		-title  => "$iface already configured!",
+		-border => 1,
+		-bfg    => 'green',
+		-tfg    => 'green',
+	);
+
+	$configure_form->add(
+		'configure_title', 'TextEditor',
+		-text => "The selected network interface, $iface, is already configured.\n"
+		        . "Would you like to reconfigure, remove or cancel setup of $iface?\n",
+		-border    => 0,
+		-x         => 3,
+		-y         => 2,
+		-width     => 75,
+		-height    => 4,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	my $configure_list = $configure_form->add(
+		'configure_list',
+		'Listbox',
+		-border     => 1,
+		-bfg        => 'green',
+		-wraparound => 1,
+		-x          => 15,
+		-y          => 6,
+		-width      => 35,
+		-height     => 5,
+		-values     => [ 'reconfigure', 'deconfigure', 'cancel', ],
+		-labels     => {
+			'reconfigure' => "Reconfigure $iface",
+			'deconfigure' => "Remove configuration for $iface",
+			'cancel'      => "Cancel",
+		},
+		-onchange => sub {
+			my $this = shift;
+			if ($this->get eq 'cancel') {
+				$iface = undef;
+			}
+			$this->parent->loose_focus;
+		},
+	);
+
+	$configure_list->focus;
+	$configure_form->set_binding(sub { exit 1; }, "\cC", "\cQ");
+	$configure_form->modalfocus;
+	$ceni->delete('configure_form');
+
+	if ($configure_list->get =~ /^(re|de)configure$/) {
+		$ceni->status("Removing ifupdown settings for $iface...");
+		$bend->ifdown($iface);
+		$ceni->nostatus;
+		
+		if ($configure_list->get eq 'deconfigure') {
+			$bend->rem_iface_conf($iface);
+			$iface = undef;
+		}
+		else {
+			$continue++;
+		}
+	}
+
+	$continue and return 1;
+	return 0;
+}
+
+sub wifi_scan_form {
+	$wcell = undef;
+
+	my $nic = $bend->get_nic_info($iface);
+	
+	unless ($iface and $nic->{'connection_type'} eq 'wireless') {
+		return 1;
+	}
+
+	$ceni->status('Scanning for wireless networks...');
+	$bend->iwlist_scan($iface);
+	$ceni->nostatus;
+
+	my @s = sort { $a <=> $b } keys %{ $bend->get_iwlist_res };
+	my %s;
+
+	for my $c (@s) {
+		my $cell = $bend->get_iwlist_res($c);
+		
+		$s{$c} = " $c  ";
+
+		if ($cell->{'mode'} ne 'master') {
+			$s{$c} .= sprintf "%-25s", '"' . $cell->{'ssid'} . '"' .
+				" (" . $cell->{'mode'} . ")";
+		}
+		else {
+			$s{$c} .= sprintf "%-25s", '"' . $cell->{'ssid'} . '"';
+		}
+
+		$s{$c} .= sprintf "%-14s", "Signal: " . $cell->{'qual'};
+		
+		if ($cell->{'enc'} and $cell->{'wpa'}) {
+			$s{$c} .= " Enc: WPA ";
+		}
+		elsif ($cell->{'enc'}) {
+			$s{$c} .= " Enc: WEP ";
+		}
+		else {
+			$s{$c} .= " Enc: OPEN";
+		}
+		
+		$s{$c} .= ' ' . $cell->{'bssid'};
+	}
+
+	my $wifi_scan_form = $ceni->add(
+		'wireless_scan_form', 'Window',
+		-title  => "Wireless Networks",
+		-border => 1,
+		-bfg    => 'green',
+		-tfg    => 'green',
+	);
+
+	$wifi_scan_form->add(
+		'wireless_ssid_title', 'TextEntry',
+		-text      => 'Choose a network:',
+		-border    => 0,
+		-x         => 3,
+		-y         => 2,
+		-width     => 75,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	my $wifi_ssid_list = $wifi_scan_form->add(
+		'wireless_ssid_list',
+		'Listbox',
+		-border     => 1,
+		-bfg        => 'green',
+		-wraparound => 1,
+		-x          => 1,
+		-y          => 4,
+		-width      => 76,
+		-height     => 13,
+		-values     => \@s,
+		-labels     => \%s,
+		-onchange   => sub { shift->parent->lose_focus; },
+	);
+
+	my $wifi_scan_ignore = $wifi_scan_form->add(
+		'wireless_scan_ignore',
+		'Buttonbox',
+		-x       => 15,
+		-y       => 17,
+		-width   => 12,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [{
+				-label   => '[  Skip  ]',
+				-onpress => sub {
+					$wcell = '*';
+					shift->parent->lose_focus;
+				}
+			},
+		],
+	);
+
+	my $wifi_scan_again = $wifi_scan_form->add(
+		'wireless_scan_again',
+		'Buttonbox',
+		-x       => 30,
+		-y       => 17,
+		-width   => 12,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [{
+				-label   => '[  Scan  ]',
+				-onpress => sub {
+					$wcell = undef;
+					shift->parent->lose_focus;
+				}
+			},
+		],
+	);
+
+	my $wifi_scan_cancel = $wifi_scan_form->add(
+		'wireless_scan_cancel',
+		'Buttonbox',
+		-x       => 45,
+		-y       => 17,
+		-width   => 12,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [{
+				-label   => '[  Back  ]',
+				-onpress => sub {
+					$iface = undef;
+					shift->parent->lose_focus;
+				}
+			},
+		],
+	);
+
+	$wifi_ssid_list->focus;
+	$wifi_scan_form->set_binding(sub { exit 1; }, "\cC", "\cQ");
+	$wifi_scan_form->modalfocus;
+	$ceni->delete('wireless_scan_form');
+
+	$wcell ||= $wifi_ssid_list->get;
+
+	$iface and $wcell and return 1;
+	return 0;
+}
+
+sub wifi_conf_form {
+	return 1 unless $wcell;
+
+	my $nic  = $bend->get_nic_info($iface);
+	my $scan = $bend->get_iwlist_res($wcell);
+	
+	my $accept = 0;
+	my %w;
+	
+	my $wifi_conf_form = $ceni->add(
+		'wifi_conf_form', 'Window',
+		-title  => "Wireless settings for $iface",
+		-border => 1,
+		-bfg    => 'green',
+		-tfg    => 'green',
+	);
+
+	$wifi_conf_form->add(
+		'backend_title', 'TextEntry',
+		-text      => 'Backend:',
+		-border    => 0,
+		-x         => 5,
+		-y         => 1,
+		-width     => 9,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	$w{'backend'} = $wifi_conf_form->add(
+		'backend_list', 'Listbox',
+		-radio      => 1,
+		-wraparound => 1,
+		-ipadleft   => 2,
+		-x          => 15,
+		-y          => 1,
+		-width      => 20,
+		-height     => 2,
+		-values     => [ 'wireless', 'wpa', ],
+		-labels     => { 'wireless' => 'wireless-tools', 'wpa' => 'wpa_supplicant', },
+		-selected   => 0,
+	);
+
+	$wifi_conf_form->add(
+		'mode_title', 'TextEntry',
+		-text      => 'Mode:',
+		-border    => 0,
+		-x         => 45,
+		-y         => 1,
+		-width     => 9,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	$w{'mode'} = $wifi_conf_form->add(
+		'mode_list', 'Listbox',
+		-radio      => 1,
+		-wraparound => 1,
+		-ipadleft   => 2,
+		-x          => 55,
+		-y          => 1,
+		-width      => 20,
+		-height     => 2,
+		-values     => [ 'managed', 'ad-hoc', ],
+		-selected   => 0,
+	);
+
+	$wifi_conf_form->add(
+		'wireless_enc_title', 'TextEntry',
+		-text      => 'Encryption:',
+		-border    => 0,
+		-x         => 25,
+		-y         => 4,
+		-width     => 12,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	$w{'enc'} = $wifi_conf_form->add(
+		'enc_list', 'Listbox',
+		-radio      => 1,
+		-wraparound => 1,
+		-ipadleft   => 2,
+		-x          => 38,
+		-y          => 4,
+		-width      => 20,
+		-height     => 3,
+		-values     => [ 'None', 'WEP', 'WPA', ],
+		-selected   => 0,
+		-onchange   => sub {
+			my $this = shift;
+			
+			if ($this->get eq 'None') {
+				for ('psk', 'psk_len', 'stdin', 'clear') {
+					$w{$_}->set_color_bfg('red');
+					$w{$_}->focusable(0);
+				}
+			}
+			else {
+				if ($this->get eq 'WPA') {
+					$w{'backend'}->set_selection(1);
+					$w{'backend'}->focusable(0);
+				}
+				
+				for ('stdin', 'clear') {
+					$w{$_}->set_color_bfg('blue');
+					$w{$_}->focusable(1);
+				}
+				
+				$w{'psk'}->set_color_bfg('green');
+				$w{'psk'}->focusable(1);
+			}
+		}
+	);
+
+	$wifi_conf_form->add(
+		'wireless_ssid_title', 'TextEntry',
+		-text      => 'Network ESSID:',
+		-border    => 0,
+		-x         => 1,
+		-y         => 9,
+		-width     => 16,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	$w{'ssid'} = $wifi_conf_form->add(
+		'wireless_ssid_input', 'TextEntry',
+		-border   => 1,
+		-bfg      => 'green',
+		-x        => 17,
+		-y        => 8,
+		-ipadleft => 1,
+		-width    => 36,
+	);
+
+	$w{'hidden_ssid'} = $wifi_conf_form->add(
+		'wireless_hidden_ssid', 'Checkbox',
+		-label => 'hidden ESSID',
+		-x     => 55,
+		-y     => 9,
+		-width => 20,
+	);
+
+	$wifi_conf_form->add(
+		'wireless_bssid_title', 'TextEntry',
+		-text      => 'Network BSSID:',
+		-border    => 0,
+		-x         => 1,
+		-y         => 12,
+		-width     => 16,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	$w{'bssid'} = $wifi_conf_form->add(
+		'wireless_bssid_input', 'TextEntry',
+		-border   => 1,
+		-bfg      => 'green',
+		-x        => 17,
+		-y        => 11,
+		-ipadleft => 1,
+		-width    => 36,
+		-regexp   => 'm/^[0-9A-F:]*$/i',
+	);
+
+	$w{'force_bssid'} = $wifi_conf_form->add(
+		'wireless_force_bssid', 'Checkbox',
+		-label    => 'forced BSSID',
+		-x        => 55,
+		-y        => 12,
+		-width    => 20,
+		-onchange => sub { $w{'bssid'}->focusable(1); },
+	);
+
+	$wifi_conf_form->add(
+		'wireless_psk_title', 'TextEntry',
+		-text      => 'Preshared Key:',
+		-border    => 0,
+		-x         => 1,
+		-y         => 15,
+		-width     => 16,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	$w{'psk'} = $wifi_conf_form->add(
+		'wireless_psk_input', 'PasswordEntry',
+		-border       => 1,
+		-showoverflow => 0,
+		-bfg          => 'red',
+		-x            => 17,
+		-y            => 14,
+		-width        => 30,
+		-ipadleft     => 1,
+		-focusable    => 0,
+		-onchange     => sub {
+			my $this = shift;
+			my $psk  = $this->get;
+			my $enc  = $w{'enc'}->get;
+
+			if (psk_is_valid($enc, $psk)) {
+				$w{'psk_len'}->set_color_bfg('green');
+			}
+			else {
+				$w{'psk_len'}->set_color_bfg('red');
+			}
+			
+			$w{'psk_len'}->text(length $psk);
+		},
+	);
+
+	$w{'psk_len'} = $wifi_conf_form->add(
+		'wireless_psk_count', 'TextEntry',
+		-text      => '0',
+		-x         => 47,
+		-y         => 14,
+		-width     => 6,
+		-height    => 4,
+		-border    => 1,
+		-focusable => 0,
+		-readonly  => 1,
+		-bfg       => 'red',
+		-ipadleft  => 1,
+	);
+
+	$w{'stdin'} = $wifi_conf_form->add(
+		'wireless_psk_stdin',
+		'Buttonbox',
+		-x         => 54,
+		-y         => 14,
+		-width     => 9,
+		-height    => 4,
+		-border    => 1,
+		-bfg       => 'red',
+		-focusable => 0,
+		-buttons   => [{
+				-label   => '[Paste]',
+				-onpress => sub {
+					my $this = shift;
+					my $enc  = $w{'enc'}->get;
+					
+					$ceni->leave_curses;
+					
+					print 'Enter preshared key: ';
+					
+					ReadMode('noecho');
+					chomp(my $psk = ReadLine(0));
+					ReadMode('normal');
+					
+					print "\n";
+					
+					$ceni->reset_curses;
+
+					$w{'psk'}->text($psk);
+					$w{'psk_len'}->text(length $psk);
+					
+					$this->lose_focus;
+
+					if (psk_is_valid($enc, $psk)) {
+						$w{'psk_len'}->set_color_bfg('green');
+						$w{'confirm'}->focus;
+					}
+					else {
+						$w{'psk'}->focus;
+					}
+				}
+			},
+		],
+	);
+
+	$w{'clear'} = $wifi_conf_form->add(
+		'wireless_psk_clear',
+		'Buttonbox',
+		-x         => 64,
+		-y         => 14,
+		-width     => 9,
+		-height    => 4,
+		-border    => 1,
+		-bfg       => 'red',
+		-focusable => 0,
+		-buttons   => [{
+				-label   => '[Clear]',
+				-onpress => sub {
+					my $this = shift;
+					
+					$w{'psk_len'}->text('0');
+					$w{'psk_len'}->set_color_bfg('red');
+					
+					$this->lose_focus;
+				
+					$w{'psk'}->text('');
+					$w{'psk'}->focus;
+				}
+			},
+		],
+	);
+
+	$w{'confirm'} = $wifi_conf_form->add(
+		'wireless_confirm',
+		'Buttonbox',
+		-x       => 15,
+		-y       => 17,
+		-width   => 12,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [{
+				-label   => '[ Accept ]',
+				-onpress => sub {
+					my $this   = shift;
+					my $enc    = $w{'enc'}->get;
+					my $valid  = 0;
+					
+					if ($enc eq 'None') {
+						$valid++;
+					}
+					else {
+						if (psk_is_valid($enc, $w{'psk'}->get)) {
+							$valid++;
+						}
+						else {
+							if ($enc eq 'WEP') {
+								$ceni->error(" $enc encryption requires a key with at least 5 characters.");
+							}
+							elsif ($enc eq 'WPA') {
+								$ceni->error(" $enc encryption requires a key with 8 to 63 characters.");
+							}
+							$this->lose_focus;
+							$w{'psk'}->focus;
+						}
+					}
+					
+					if ($valid) {
+						$accept++;
+						$this->parent->lose_focus;
+					}
+				}
+			},
+		],
+	);
+
+	my $wifi_scan = $wifi_conf_form->add(
+		'wireless_scan',
+		'Buttonbox',
+		-x       => 30,
+		-y       => 17,
+		-width   => 12,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [{
+				-label   => '[  Scan  ]',
+				-onpress => sub {
+					$wcell = undef;
+					shift->parent->lose_focus;
+				}
+			},
+		],
+	);
+
+	my $wifi_cancel = $wifi_conf_form->add(
+		'wireless_cancel',
+		'Buttonbox',
+		-x       => 45,
+		-y       => 17,
+		-width   => 14,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [{
+				-label   => '[  Cancel  ]',
+				-onpress => sub {
+					$iface = undef;
+					$wcell = undef;
+					shift->parent->lose_focus;
+				}
+			},
+		],
+	);
+
+	if ($wcell) {
+		if ($scan->{'ssid'}) {
+			if ($scan->{'ssid'} =~ m/^(any|on|off)$/i) {
+				# escape ssid's which are iwconfig keywords
+				$w{'ssid'}->text('-- ' . $scan->{'ssid'});
+				$w{'ssid'}->focusable(0);;
+			}
+			elsif ($scan->{'ssid'} !~ /^(<hidden>|\*)$/) {
+				$w{'ssid'}->text($scan->{'ssid'});
+				$w{'ssid'}->focusable(0);
+			}
+			else {
+				if ($scan->{'ssid'} eq '<hidden>') {
+					$w{'hidden_ssid'}->check;
+				}
+
+				$w{'ssid'}->focus;
+			}
+		}
+
+		if ($scan->{'enc'} eq 'on') {
+			if ($scan->{'wpa'}) {
+				$w{'enc'}->set_selection(2);
+				$w{'backend'}->set_selection(1);
+			}
+			else {
+				$w{'enc'}->set_selection(1);
+				$w{'backend'}->set_selection(0);
+			}
+
+			if ($scan->{'ssid'}) {
+				$w{'psk'}->focus;
+			}
+		}
+
+		if ($scan->{'mode'}) {
+			if ($scan->{'mode'} eq 'master') {
+				$w{'mode'}->set_selection(0);
+			}
+			elsif ($scan->{'mode'} eq 'ad-hoc') {
+				$w{'mode'}->set_selection(1);
+			}
+		}
+
+		if ($scan->{'bssid'}) {
+			$w{'bssid'}->text($scan->{'bssid'});
+			$w{'bssid'}->focusable(0);
+		}
+	}
+	else {
+		$w{'backend'}->focus;
+	}
+
+	$wifi_conf_form->set_binding(sub { exit 1; }, "\cC", "\cQ");
+	$wifi_conf_form->modalfocus;
+	$ceni->delete('wifi_conf_form');
+
+	if ($w{'mode'}->get ne 'managed') {
+		if ($nic->{'drivers'} eq 'ath_pci') {
+			$conf{'stanza'}{'madwifi-mode'} = $w{'mode'}->get;
+		}
+		else {
+			$conf{'stanza'}{'wireless-mode'} = $w{'mode'}->get;
+		}
+	}
+	
+	if ($w{'backend'}->get eq 'wireless') {
+		if ($w{'ssid'}->get) {
+			$conf{'stanza'}{'wireless-essid'} = $w{'ssid'}->get;
+		}
+		else {
+			$conf{'stanza'}{'wireless-essid'} = "any";
+		}
+
+		if ($w{'psk'}->get) {
+			my $psk     = $w{'psk'}->get;
+			my $psk_len = length $psk;
+			
+			if (is_hex($psk) and $psk_len =~ m/^(10|26|32|58)$/) {
+				$conf{'stanza'}{'wireless-key'} = $psk;
+			}
+			elsif ($psk !~ /^s:/) {
+				$conf{'stanza'}{'wireless-key'} = "s:" . $psk;
+			}
+			else {
+				$conf{'stanza'}{'wireless-key'} = $psk;
+			}
+		}
+
+		if ($w{'bssid'}->get and $w{'force_bssid'}->get) {
+			$conf{'stanza'}{'wireless-ap'} = $w{'bssid'}->get;
+		}
+	}
+	else {
+		if ($w{'ssid'}->get) {
+			$conf{'stanza'}{'wpa-ssid'} = $w{'ssid'}->get;
+		}
+
+		if ($w{'bssid'}->get and $w{'force_bssid'}->get) {
+			$conf{'stanza'}{'wpa-bssid'} = $w{'bssid'}->get;
+		}
+
+		if ($w{'hidden_ssid'}->get) {
+			$conf{'stanza'}{'wpa-scan-ssid'} = '1';
+			$conf{'stanza'}{'wpa-ap-scan'}   = '1';
+		}
+
+		if ($w{'enc'}->get =~ /^(None|WEP)$/) {
+			$conf{'stanza'}{'wpa-key-mgmt'} = 'NONE';
+			
+			if ($w{'enc'}->get eq 'WEP') {
+				$conf{'stanza'}{'wpa-wep-key0'}      = $w{'psk'}->get;
+				$conf{'stanza'}{'wpa-wep-tx-keyidx'} = '0';
+
+				if ($conf{'stanza'}{'wpa-wep-key0'} =~ m/^-- (any|on|off)$/) {
+					$conf{'stanza'}{'wpa-wep-key0'} =~ s/^--\s+//;
+				}
+			}
+		}
+		else {
+			$conf{'stanza'}{'wpa-psk'} = $w{'psk'}->get;
+		}
+	}
+
+	$accept and return 1;
+	return 0;
+}
+
+sub netw_conf_form {
+	return 0 unless $iface;
+
+	my $accept;
+
+	my $current = $bend->get_iface_conf($iface);
+
+	my @static = (
+		'address', 'netmask', 'network', 'broadcast', 'gateway',
+		'dns-search', 'dns-nameservers',
+	);
+
+	my %s;
+
+	my $network_form = $ceni->add(
+		'network_form', 'Window',
+		-title  => "Network settings for $iface",
+		-border => 1,
+		-bfg    => 'green',
+		-tfg    => 'green',
+	);
+
+	$network_form->add(
+		'method_title', 'TextEntry',
+		-text      => 'Method:',
+		-border    => 0,
+		-x         => 1,
+		-y         => 1,
+		-width     => 12,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	$s{'method'} = $network_form->add(
+		'method_list',
+		'Listbox',
+		-radio      => 1,
+		-wraparound => 1,
+		-ipadleft   => 2,
+		-x          => 15,
+		-y          => 1,
+		-width      => 20,
+		-height     => 3,
+		-values     => [ 'dhcp', 'static', 'manual', ],
+		-selected   => 0,
+		-onchange   => sub {
+			if ($s{'method'}->get() ne 'static') {
+				foreach (@static) {
+					next unless $s{$_};
+					$s{$_}->focusable(0);
+					$s{$_}->set_color_bfg('red');
+					$s{$_}->text('');
+				}
+			}
+			else {
+				foreach (@static) {
+					next unless $s{$_};
+					$s{$_}->focusable(1);
+					$s{$_}->set_color_bfg('green');
+
+					if ($current->{'stanza'}->{$_}) {
+						$s{$_}->text($current->{'stanza'}->{$_});
+					}
+				}
+			}
+		},
+	);
+
+	$network_form->add(
+		'class_title', 'TextEntry',
+		-text      => 'Class:',
+		-border    => 0,
+		-x         => 40,
+		-y         => 1,
+		-width     => 12,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	$s{'class'} = $network_form->add(
+		'class_list', 'Listbox',
+		-radio      => 1,
+		-wraparound => 1,
+		-ipadleft   => 2,
+		-x          => 55,
+		-y          => 1,
+		-width      => 20,
+		-height     => 3,
+		-values     => [ 'allow-hotplug', 'auto', 'manual', ],
+		-selected   => 0,
+	);
+
+	$network_form->add(
+		'address_title', 'TextEntry',
+		-text      => 'IP address:',
+		-border    => 0,
+		-x         => 1,
+		-y         => 6,
+		-width     => 14,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	$s{'address'} = $network_form->add(
+		'address_input',
+		'TextEntry',
+		-border    => 1,
+		-bfg       => 'red',
+		-x         => 15,
+		-y         => 5,
+		-width     => 20,
+		-ipadleft  => 1,
+		-focusable => 0,
+		-regexp    => '/^[0-9\.]*$/',
+		-onblur    => sub {
+			if (is_ip($s{'address'}->get)) {
+				if ($s{'address'}->get =~ m/^(\d+\.\d+\.\d+\.)\d+$/) {
+					$s{'network'}->text($1 . '0');
+					$s{'broadcast'}->text($1 . '255');
+					$s{'netmask'}->text('255.255.255.0');
+				}
+			}
+		},
+	);
+
+	$network_form->add(
+		'network_title', 'TextEntry',
+		-text      => 'Network:',
+		-border    => 0,
+		-x         => 40,
+		-y         => 6,
+		-width     => 14,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	$s{'network'} = $network_form->add(
+		'network_input', 'TextEntry',
+		-border    => 1,
+		-bfg       => 'red',
+		-x         => 55,
+		-y         => 5,
+		-width     => 20,
+		-ipadleft  => 1,
+		-focusable => 0,
+		-regexp    => '/^[0-9\.]*$/',
+	);
+
+	$network_form->add(
+		'netmask_title', 'TextEntry',
+		-text      => 'Netmask:',
+		-border    => 0,
+		-x         => 1,
+		-y         => 9,
+		-width     => 14,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	$s{'netmask'} = $network_form->add(
+		'netmask_input', 'TextEntry',
+		-border    => 1,
+		-bfg       => 'red',
+		-x         => 15,
+		-y         => 8,
+		-width     => 20,
+		-ipadleft  => 1,
+		-focusable => 0,
+		-regexp    => '/^[0-9\.]*$/',
+	);
+
+	$network_form->add(
+		'broadcast_title', 'TextEntry',
+		-text      => 'Broadcast:',
+		-border    => 0,
+		-x         => 40,
+		-y         => 9,
+		-width     => 14,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	$s{'broadcast'} = $network_form->add(
+		'broadcast_input', 'TextEntry',
+		-border    => 1,
+		-bfg       => 'red',
+		-x         => 55,
+		-y         => 8,
+		-width     => 20,
+		-ipadleft  => 1,
+		-focusable => 0,
+		-regexp    => '/^[0-9\.]*$/',
+	);
+
+	$network_form->add(
+		'gateway_title', 'TextEntry',
+		-text      => 'Gateway:',
+		-border    => 0,
+		-x         => 1,
+		-y         => 12,
+		-width     => 14,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	$s{'gateway'} = $network_form->add(
+		'gateway_input', 'TextEntry',
+		-border    => 1,
+		-bfg       => 'red',
+		-x         => 15,
+		-y         => 11,
+		-width     => 20,
+		-ipadleft  => 1,
+		-focusable => 0,
+		-regexp    => '/^[0-9\.]*$/',
+	);
+
+	if (-x '/sbin/resolvconf') {
+		$network_form->add(
+			'dnssearch_title', 'TextEntry',
+			-text      => 'DNS Search:',
+			-border    => 0,
+			-x         => 40,
+			-y         => 12,
+			-width     => 14,
+			-focusable => 0,
+			-readonly  => 1,
+		);
+
+		$s{'dns-search'} = $network_form->add(
+			'dnssearch_input', 'TextEntry',
+			-border    => 1,
+			-bfg       => 'red',
+			-x         => 55,
+			-y         => 11,
+			-width     => 20,
+			-ipadleft  => 1,
+			-focusable => 0,
+		);
+
+		$network_form->add(
+			'dnsnameservers_title', 'TextEntry',
+			-text      => 'Nameservers:',
+			-border    => 0,
+			-x         => 1,
+			-y         => 15,
+			-width     => 14,
+			-focusable => 0,
+			-readonly  => 1,
+			-regexp    => '/^[0-9\.\s]*$/',
+		);
+
+		$s{'dns-nameservers'} = $network_form->add(
+			'dnsnameservers_input', 'TextEntry',
+			-border       => 1,
+			-showoverflow => 0,
+			-bfg          => 'red',
+			-x            => 15,
+			-y            => 14,
+			-width        => 60,
+			-ipadleft     => 1,
+			-focusable    => 0,
+		);
+	}
+
+	my $confirm = $network_form->add(
+		'confirm',
+		'Buttonbox',
+		-x       => 15,
+		-y       => 17,
+		-width   => 12,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [{
+				-label   => '[ Accept ]',
+				-onpress => sub {
+					my $this = shift;
+					my $invalid;
+					for (sort keys %s) {
+						if ($s{'method'}->get eq 'static') {
+							if (m/address|netmask/) {
+								unless (is_ip($s{$_}->get)) {
+									$invalid = $_;
+									last;
+								}
+							}
+						}
+
+						$s{$_}->get or next;
+
+						if (m/broadcast|gateway|network/) {
+							unless (is_ip($s{$_}->get)) {
+								$invalid = $_;
+								last;
+							}
+						}
+					}
+
+					if ($invalid) {
+						$ceni->error("Invalid $invalid");
+						$this->lose_focus;
+						$s{$invalid}->focus;
+					}
+					else {
+						$accept++;
+						$this->parent->lose_focus;
+					}
+				}
+			},
+		],
+	);
+
+	my $back = $network_form->add(
+		'back',
+		'Buttonbox',
+		-x       => 30,
+		-y       => 17,
+		-width   => 12,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [{
+				-label   => '[  Back  ]',
+				-onpress => sub { shift->parent->lose_focus; }
+			},
+		],
+	);
+
+	my $cancel = $network_form->add(
+		'cancel',
+		'Buttonbox',
+		-x       => 45,
+		-y       => 17,
+		-width   => 14,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [{
+				-label   => '[  Cancel  ]',
+				-onpress => sub {
+					$iface = undef;
+					shift->parent->lose_focus;
+				}
+			},
+		],
+	);
+
+	if (not $current->{'method'}) {
+		$s{'method'}->set_selection(0);
+	}
+	elsif ($current->{'method'} eq 'static') {
+		$s{'method'}->set_selection(1);
+	}
+
+	if (not $current->{'class'} and keys %{ $current }) {
+		$s{'class'}->set_selection(2);
+	}
+	elsif ($current->{'class'} eq 'auto') {
+		$s{'class'}->set_selection(1);
+	}
+	else {
+		# allow-hotplug
+		$s{'class'}->set_selection(0);
+	}
+
+	$s{'method'}->focus;
+	$network_form->set_binding(sub { exit 1; }, "\cC", "\cQ");
+	$network_form->modalfocus;
+	$ceni->delete('network_form');
+
+	for ('class', 'method') {
+		if ($s{$_}->get) {
+			$conf{$_} = $s{$_}->get;
+		}
+	}
+
+	for (@static) {
+		if ($s{$_} and $s{$_}->get) {
+			$conf{'stanza'}{$_} = $s{$_}->get;
+		}
+	}
+
+	$accept and return 1;
+	return 0;
+}
+
+sub ifupdown_iface {
+	unless($conf{'method'}) {
+		return 0;
+	}
+
+	my $current = $bend->get_iface_conf($iface);
+
+	if ($current->{'comment'}) {
+		$conf{'comment'} = $current->{'comment'};
+	}
+
+	$bend->debug(\%conf, 'conf');
+
+	$bend->set_iface_conf($iface, \%conf);
+	$bend->parse_eni;
+
+	$ceni->leave_curses;
+
+	restore_stderr();
+	
+	$bend->ifup($iface);
+
+	print "\n";
+	print '#', '#' x 59, "\n";
+	print "  Press any key and then Enter to continue (re)configuring\n";
+	print "  network interfaces.\n";
+	print "\n";
+	print "  Otherwise press the Enter key to exit now.\n";
+	print '#', '#' x 59, "\n";
+	print "\n";
+
+	ReadMode('noecho');
+	chomp(my $key = ReadLine(0));
+	ReadMode('normal');
+
+	if ($key =~ /\w|\s/) {
+		redirect_stderr();
+		
+		$ceni->reset_curses();
+		
+		$iface = undef;
+		return 0;
+	}
+
+	return 1;
+}
+
+#===============================================#
+#
+sub main () {
+	redirect_stderr();
+
+	while (1) {
+		%conf = ();
+		
+		$bend->parse_eni;
+		$bend->nic_info;
+		
+		interface_form() or last;
+		configure_form() or next;
+		wifi_scan_form() or next;
+		wifi_conf_form() or next;
+		netw_conf_form() or next;
+		ifupdown_iface() or next;
+		
+		last;
+	}
+}
+
+main();
+
+__END__
+
+=head1 NAME
+
+Ceni - Curses /etc/network/interfaces
+
+=head1 SYNOPSIS
+
+  Ceni [ options ]
+
+=head1 DESCRIPTION
+
+A lightweight User Interface to configuring network devices via ifupdown.
+
+=head1 OPTIONS
+
+=item B<--file> filename
+
+Use filename as alternative /etc/network/interfaces
+
+=item B<--iface> iface
+
+Configure network interface with name iface
+
+=item B<--no-act>
+
+Call ifup and ifdown with -n option to simulate action
+Must be first argument to have effect.
+
+=item B<--debug>
+
+Debug output piped to /tmp/ceni.log
+
+=head1 AUTHOR
+
+Kel Modderman, E<lt>kel@otaku42.deE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2007 by Kel Modderman
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this package; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the text of the GPL license can be
+found in /usr/share/common-licenses/GPL.
+
+=cut

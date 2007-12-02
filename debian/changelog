@@ -1,0 +1,99 @@
+ceni (1.12) unstable; urgency=low
+
+  * Fix start via priviledge esculation plus exec.
+
+ -- Kel Modderman <kel@otaku42.de>  Sun, 02 Dec 2007 10:45:15 +1000
+
+ceni (1.11) unstable; urgency=low
+
+  * Add support for configuring encryptionless association to an ssid.
+  * More UI enhancements to the wireless configuration form.
+
+ -- Kel Modderman <kel@otaku42.de>  Sun, 02 Dec 2007 10:37:13 +1000
+
+ceni (1.10) unstable; urgency=low
+
+  * Fix selection of invalid network setting field with proper focus shift.
+  * Fix preselection of manual inet method based on current configuration.
+
+ -- Kel Modderman <kel@otaku42.de>  Sat, 01 Dec 2007 17:35:36 +1000
+
+ceni (1.9) unstable; urgency=low
+
+  * Add psk_is_valid() function to verify validity of encryption keys.
+  * Numerous enhancements to the wireless input form.
+
+ -- Kel Modderman <kel@otaku42.de>  Sat, 01 Dec 2007 17:27:24 +1000
+
+ceni (1.8) unstable; urgency=low
+
+  * Rename the Read STDIN button box to "Paste" and add a "Clear" button next
+    to it.
+  * Add a psk character length counter next to psk field.
+  * Improve format of wireless selection listbox.
+  * Simplify the pre and post processing of wireless configuration form.
+
+ -- Kel Modderman <kel@otaku42.de>  Sat, 01 Dec 2007 14:04:08 +1000
+
+ceni (1.7) unstable; urgency=low
+
+  * Some tiny tweaks, bump version for a new upload.
+
+ -- Kel Modderman <kel@otaku42.de>  Sat, 01 Dec 2007 10:54:08 +1000
+
+ceni (1.6) unstable; urgency=low
+
+  * Don't restrict wireless backend choice due to scan results, only make a
+    1st preference. Probably a few others need to be less restrictive too.
+  * Add is_hex(), will use it to make smarter choices about input'd wep keys
+    in future.
+  * Check WEP key, if its not a valid hex key prepend the magic "s:" to the
+    beginning of the key, if not already done so.
+
+ -- Kel Modderman <kel@otaku42.de>  Sat, 01 Dec 2007 00:43:18 +1000
+
+ceni (1.5) unstable; urgency=low
+
+  * When making psk field unfocusable, also make the Read STDIN button
+    unusable.
+
+ -- Kel Modderman <kel@otaku42.de>  Fri, 30 Nov 2007 20:22:35 +1000
+
+ceni (1.4) unstable; urgency=low
+
+  * Cleanup STDERR dup and redirection.
+
+ -- Kel Modderman <kel@otaku42.de>  Fri, 30 Nov 2007 18:29:17 +1000
+
+ceni (1.3) unstable; urgency=low
+
+  * Fix passing of arguments to root process that gets exec'd. This does mean
+    that --no-act must be first arg if used.
+
+ -- Kel Modderman <kel@otaku42.de>  Fri, 30 Nov 2007 18:21:28 +1000
+
+ceni (1.2) unstable; urgency=low
+
+  * Depend on libterm-readkey-perl. Use Term::ReadKey to more securely acquire
+    psk from STDIN. Also use it for final confirmation.
+  * When psk field has content, set stdin to non-focusable state.
+
+ -- Kel Modderman <kel@otaku42.de>  Fri, 30 Nov 2007 17:07:43 +1000
+
+ceni (1.1) unstable; urgency=low
+
+  * Fix root test when debug option is used. Only avoid becoming root if
+    --no-act is used.
+  * Leave curses before running ifup.
+  * Preseed class selection based on current configuration.
+  * Don't attempt to call get method on static network entries that may not
+    exist (eg resolvconf dependent).
+  * Save file descriptor to STDERR and restore it for the final ifup.
+
+ -- Kel Modderman <kel@otaku42.de>  Fri, 30 Nov 2007 16:27:48 +1000
+
+ceni (1.0) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Kel Modderman <kel@otaku42.de>  Fri, 30 Nov 2007 11:08:21 +1000
