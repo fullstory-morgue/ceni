@@ -3,8 +3,9 @@ ceni (1.13) unstable; urgency=low
   * Cleanup entry into each form.
   * Add ifstate state tracking to backend.
   * Enhanced network device presentation.
+  * Remove stray regexp property on nameserver titlebox.
 
- -- Kel Modderman <kel@otaku42.de>  Sun, 02 Dec 2007 18:46:29 +1000
+ -- Kel Modderman <kel@otaku42.de>  Mon, 03 Dec 2007 00:14:47 +1000
 
 ceni (1.12) unstable; urgency=low
 

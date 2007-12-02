@@ -1190,7 +1190,6 @@ sub netw_conf_form {
 			-width     => 14,
 			-focusable => 0,
 			-readonly  => 1,
-			-regexp    => '/^[0-9\.\s]*$/',
 		);
 
 		$s{'dns-nameservers'} = $network_form->add(
