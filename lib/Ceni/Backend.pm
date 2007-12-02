@@ -94,10 +94,11 @@ sub nic_info {
 			$i{$if}{'desc'} = "Unknown description";
 		}
 
-		$i{$if}{'info'} = $if;
+		$i{$if}{'info'} = sprintf "%-6s", $if;
 		for ('connection_type', 'address', 'desc') {
 			$i{$if}{'info'} .= " " . $i{$if}{$_};
 		}
+		$i{$if}{'info'} .= " (" . $i{$if}{'drivers'} . ")";
 	}
 
 	$self->debug(\%i, "i");
