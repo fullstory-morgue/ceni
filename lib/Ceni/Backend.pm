@@ -331,6 +331,9 @@ sub ifupdown {
 			}
 		}
 		else {
+			if ($action =~ m/if(up|down)$/) {
+				$self->{'_data'}->{'ifupdown'}->{$iface} = $1;
+			}
 			return 1;
 		}
 	}
@@ -353,6 +356,16 @@ sub ifdown {
 	my ($self, $iface) = (shift, shift);
 
 	return $self->ifupdown($iface, '/sbin/ifdown');
+}
+
+sub ifstate {
+	my ($self, $iface) = (shift, shift);
+
+	if ($iface and $self->{'_data'}->{'ifupdown'}->{$iface}) {
+		return $self->{'_data'}->{'ifupdown'}->{$iface};
+	}
+
+	return undef;
 }
 
 sub iwlist_scan {

@@ -18,10 +18,17 @@ iface eth0 inet static
 # broadcast 192.168.0.255
 
 auto eth2
-iface eth2 inet dhcp
-	wireless-essid kelnet
-	wireless-key s:mtg99
-
-allow-hotplug eth1
-iface eth1 inet dhcp
+iface eth2 inet static
+	address 10.1.1.1
+	broadcast 10.1.1.255
+	gateway 10.1.1.253
+	netmask 255.255.255.0
+	network 10.1.1.0
+	wpa-ap-scan 1
+	wpa-bssid 00:13:10:41:7E:1F
+	wpa-key-mgmt NONE
+	wpa-scan-ssid 1
+	wpa-ssid kelnet
+	wpa-wep-key0 mysecretwepkey
+	wpa-wep-tx-keyidx 0
 

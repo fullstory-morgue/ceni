@@ -1,3 +1,10 @@
+ceni (1.13) unstable; urgency=low
+
+  * Cleanup entry into each form.
+  * Add ifstate state tracking to backend.
+
+ -- Kel Modderman <kel@otaku42.de>  Sun, 02 Dec 2007 18:29:28 +1000
+
 ceni (1.12) unstable; urgency=low
 
   * Fix start via priviledge esculation plus exec.
