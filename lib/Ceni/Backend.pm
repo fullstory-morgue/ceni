@@ -298,7 +298,9 @@ sub set_iface_conf {
 			push @eni, '';
 		}
 		push @eni, @block;
+	}
 
+	if (-w $self->{'file'}) {
 		chmod 0600, $self->{'file'}
 			or carp "E: failed to chmod 0600 ". $self->{'file'};
 	}

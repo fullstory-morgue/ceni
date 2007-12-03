@@ -6,7 +6,11 @@ auto lo
 iface lo inet loopback
 
 allow-hotplug eth0
-iface eth0 inet dhcp
+iface eth0 inet static
+	address 10.1.1.1
+	broadcast 10.1.1.255
+	netmask 255.255.255.0
+	network 10.1.1.0
 # non-indented, netcardconfig-like
 # address 192.168.0.1
 # netmask  255.255.255.0
