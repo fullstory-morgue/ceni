@@ -1,4 +1,4 @@
-ceni (1.14) UNRELEASED; urgency=low
+ceni (1.14) unstable; urgency=low
 
   [ Kel Modderman ]
   * Fix infinite loop when passing uknown arguments as user.
@@ -12,7 +12,7 @@ ceni (1.14) UNRELEASED; urgency=low
   [ Stefan Lippers-Hollmann ]
   * update to Standards-Version 3.7.3, no changes necessary.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 03 Dec 2007 11:55:26 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 03 Dec 2007 12:33:07 +0100
 
 ceni (1.13) unstable; urgency=low
 
