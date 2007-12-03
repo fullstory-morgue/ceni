@@ -93,12 +93,6 @@ sub nic_info {
 		else {
 			$i{$if}{'desc'} = "Unknown description";
 		}
-
-		$i{$if}{'info'} = sprintf "%-6s", $if;
-		for ('connection_type', 'address', 'desc') {
-			$i{$if}{'info'} .= " " . $i{$if}{$_};
-		}
-		$i{$if}{'info'} .= " (" . $i{$if}{'drivers'} . ")";
 	}
 
 	$self->debug(\%i, "i");
@@ -209,7 +203,8 @@ sub set_iface_conf {
 
 	$self->{'file'} ||= '/etc/network/interfaces';
 
-	tie(my @eni, 'Tie::File', $self->{'file'}) or croak "E: failed to open " . $self->{'file'};
+	tie(my @eni, 'Tie::File', $self->{'file'})
+		or carp "E: failed to open " . $self->{'file'};
 
 	my @block;
 
@@ -249,6 +244,8 @@ sub set_iface_conf {
 	if (@block) {
 		push @block, '';
 	}
+
+	$self->debug(\@block, 'block');
 
 	my $l = 0;
 
@@ -296,12 +293,11 @@ sub set_iface_conf {
 		$l++;
 	}
 
-	if (@block) {
+	if (@eni and @block) {
 		if ($eni[-1] =~ m/^\s*\S.*$/) {
 			push @eni, '';
 		}
 		push @eni, @block;
-		@block = ();
 	}
 }
 
@@ -473,6 +469,7 @@ sub debug {
 }
 
 1;
+
 __END__
 
 =head1 NAME

@@ -5,9 +5,12 @@ use warnings;
 
 use FindBin;
 
-if ($> != 0 and not @ARGV or (@ARGV and $ARGV[0] ne '--no-act')) {
-	print "Ceni requires root priviledges! Be careful!\n";
-	exec("su", "root", "-c", "$FindBin::Bin/$FindBin::Script @ARGV");
+if ($> != 0) {
+	unless (@ARGV and  $ARGV[0] =~ m/^-(h|-?help|-?no-?act)$/) {
+		print 'Ceni requires root priviledges! Be careful!\n';
+		exec('su', 'root', '-c', "$FindBin::Bin/$FindBin::Script", @ARGV);
+		exit 1;
+	}
 }
 
 use lib "$FindBin::RealBin/../lib";
@@ -28,13 +31,22 @@ my $wcell;
 
 my %conf;
 
+my $help;
+
 #===============================================#
 GetOptions(
 	'act!'    => \$act,
 	'debug'   => \$dbg,
 	'file=s'  => \$eni,
+	'help'    => \$help,
 	'iface=s' => \$iface,
 );
+
+if ($help) {
+	print "I have no help to offer you, but my manpage does.\n";
+	print "To read my manpage, execute in a shell: man Ceni\n";
+	exit 1;
+}
 
 my $ceni = new Curses::UI(
 	-color_support => 1,
@@ -148,7 +160,15 @@ sub interface_form {
 	my %i;
 
 	for my $if (@i) {
-		$i{$if} = $bend->get_nic_info($if)->{'info'};
+		my $nic = $bend->get_nic_info($if);
+
+		$i{$if} = sprintf "%-6s", $if;
+		
+		for ('connection_type', 'address', 'desc') {
+			$i{$if} .= " " . $nic->{$_};
+		}
+		
+		$i{$if} .= " (" . $nic->{'drivers'} . ")";
 	}
 
 	my $interface_form = $ceni->add(
@@ -813,7 +833,7 @@ sub wifi_conf_form {
 		],
 	);
 
-	if ($wcell) {
+	if ($wcell and $wcell ne 'none') {
 		if ($scan->{'ssid'}) {
 			if ($scan->{'ssid'} =~ m/^(any|on|off)$/i) {
 				# escape ssid's which are iwconfig keywords
@@ -1264,7 +1284,12 @@ sub netw_conf_form {
 		-bfg     => 'blue',
 		-buttons => [{
 				-label   => '[  Back  ]',
-				-onpress => sub { shift->parent->lose_focus; }
+				-onpress => sub {
+					if (not $wcell) {
+						$iface = undef;
+					}
+					shift->parent->lose_focus;
+				}
 			},
 		],
 	);

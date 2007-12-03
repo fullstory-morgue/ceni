@@ -6,11 +6,7 @@ auto lo
 iface lo inet loopback
 
 allow-hotplug eth0
-iface eth0 inet static
-	address 192.168.0.5
-	broadcast 192.168.0.255
-	netmask 255.255.255.0
-	network 192.168.0.0
+iface eth0 inet dhcp
 # non-indented, netcardconfig-like
 # address 192.168.0.1
 # netmask  255.255.255.0
@@ -31,4 +27,8 @@ iface eth2 inet static
 	wpa-ssid kelnet
 	wpa-wep-key0 mysecretwepkey
 	wpa-wep-tx-keyidx 0
+
+allow-hotplug ath0
+iface ath0 inet dhcp
+	wireless-essid any
 

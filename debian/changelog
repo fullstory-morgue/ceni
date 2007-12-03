@@ -1,8 +1,13 @@
 ceni (1.14) UNRELEASED; urgency=low
 
-  * NOT RELEASED YET
+  * Fix infinite loop when passing uknown arguments as user.
+  * Fix back button in network form when there is not wireless configuration
+    done, back should return to the interface choice menu.
+  * Fix focus on wifi backend when ssid selection was skipped.
+  * Add bogus -h|--help option to refer people to manpage.
+  * Don't die when we cannot write to /e/n/i, just raise a warning.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 02 Dec 2007 21:32:54 +0100
+ -- Kel Modderman <kel@otaku42.de>  Mon, 03 Dec 2007 12:59:42 +1000
 
 ceni (1.13) unstable; urgency=low
 
