@@ -44,7 +44,6 @@ GetOptions(
 
 if ($help) {
 	print "I have no help to offer you, but my manpage does.\n";
-	print "To read my manpage, execute in a shell: man Ceni\n";
 	exit 1;
 }
 
