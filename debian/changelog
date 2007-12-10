@@ -1,8 +1,9 @@
 ceni (1.15) UNRELEASED; urgency=low
 
-  * NOT RELEASED YET
+  * Fix passing of arguments to exec'd su call.
+  * Install signal handler to call clear on quit.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 03 Dec 2007 12:34:48 +0100
+ -- Kel Modderman <kel@otaku42.de>  Mon, 10 Dec 2007 16:20:47 +1000
 
 ceni (1.14) unstable; urgency=low
 
