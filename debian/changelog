@@ -1,3 +1,9 @@
+ceni (1.16) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 11 Dec 2007 00:43:33 +0100
+
 ceni (1.15) unstable; urgency=low
 
   * Fix passing of arguments to exec'd su call.
