@@ -1,4 +1,4 @@
-ceni (1.15) UNRELEASED; urgency=low
+ceni (1.15) unstable; urgency=low
 
   * Fix passing of arguments to exec'd su call.
   * Install signal handler to call clear on quit.
