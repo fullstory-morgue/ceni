@@ -1,0 +1,13 @@
+[Desktop Entry]
+Exec=su-to-root -c /usr/bin/Ceni
+Terminal=yes
+Icon=Ceni
+Comment=Network card configuration
+Comment[de]=Netzwerkkarte konfigurieren
+Comment[ru]=Конфигурация сетового адаптера
+Comment[es]=Configuración de la tarjeta de red
+Comment[pt]=Configuração da placa de rede
+Comment[es]=Configuração da placa de rede
+
+Type=Application
+Categories=Network;

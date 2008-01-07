@@ -1,8 +1,10 @@
-ceni (1.16) UNRELEASED; urgency=low
+ceni (1.16) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * add XDG compatible desktop file.
+  * add debian menu system entry.
+  * add symlink from Ceni --> ceni.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 11 Dec 2007 00:43:33 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 07 Jan 2008 21:48:35 +0100
 
 ceni (1.15) unstable; urgency=low
 
