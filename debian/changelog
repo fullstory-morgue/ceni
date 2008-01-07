@@ -1,3 +1,9 @@
+ceni (1.17) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 07 Jan 2008 21:51:02 +0100
+
 ceni (1.16) unstable; urgency=low
 
   * add XDG compatible desktop file.
