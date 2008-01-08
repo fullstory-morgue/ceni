@@ -1,6 +1,6 @@
 ?package(ceni): \
 	needs="text" \
 	section="Applications/System/Administration" \
-	hints="sidux,Config" \
+	hints="Config" \
 	title="Ceni" \
 	command="su-to-root -c /usr/bin/Ceni"
