@@ -1,6 +1,6 @@
 ceni (1.17) UNRELEASED; urgency=low
 
-  * Provice nicinfo in /usr/bin/ that provides fucntionality of nicinfo in
+  * Provide nicinfo in /usr/bin/ that replaces functionality of nicinfo in
     configure-networkcard < 0.7.21.
   * Conflict with configure-networkcard < 0.7.21.
   * Add Name key to ceni.desktop. Install desktop file to
