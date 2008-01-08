@@ -1,8 +1,14 @@
 ceni (1.17) UNRELEASED; urgency=low
 
-  * NOT RELEASED YET
+  * Provice nicinfo in /usr/bin/ that provides fucntionality of nicinfo in
+    configure-networkcard < 0.7.21.
+  * Conflict with configure-networkcard < 0.7.21.
+  * Add Name key to ceni.desktop. Install desktop file to
+    /usr/share/applications/.
+  * Forget about allowing Ceni to start as user in debug mode, that can be
+    removed when debugging anyway.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 07 Jan 2008 21:51:02 +0100
+ -- Kel Modderman <kel@otaku42.de>  Tue, 08 Jan 2008 14:03:22 +1000
 
 ceni (1.16) unstable; urgency=low
 

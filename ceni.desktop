@@ -9,5 +9,6 @@ Comment[es]=Configuración de la tarjeta de red
 Comment[pt]=Configuração da placa de rede
 Comment[es]=Configuração da placa de rede
 
+Name=Ceni
 Type=Application
 Categories=Network;

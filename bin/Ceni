@@ -6,11 +6,10 @@ use warnings;
 use FindBin;
 
 if ($> != 0) {
-	unless (@ARGV and  $ARGV[0] =~ m/^-(h|-?help|-?no-?act)$/) {
-		print "Ceni requires root priviledges! Be careful!\n";
-		exec('su', 'root', '-c', "$FindBin::Bin/$FindBin::Script @ARGV");
-		exit 1;
-	}
+	print "Ceni requires root priviledges! Be careful!\n";
+	exec('su', 'root', '-c', "$FindBin::Bin/$FindBin::Script @ARGV");
+	print "Failed to start $FindBin::Script as root!\n";
+	exit 1;
 }
 
 use lib "$FindBin::RealBin/../lib";
