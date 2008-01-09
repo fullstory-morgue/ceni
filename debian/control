@@ -2,7 +2,7 @@ Source: ceni
 Section: net
 Priority: optional
 Maintainer: Kel Modderman <kel@otaku42.de>
-Build-Depends: cdbs, debhelper (>= 5)
+Build-Depends: cdbs, debhelper (>= 5), imagemagick
 Build-Depends-Indep: perl (>= 5.6.0-16)
 Standards-Version: 3.7.3
 
