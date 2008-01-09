@@ -3,4 +3,6 @@
 	section="Applications/System/Administration" \
 	hints="Config" \
 	title="Ceni" \
+	icon32x32="/usr/share/pixmaps/ceni.xpm" \
+	icon16x16="/usr/share/pixmaps/ceni-16.xpm" \
 	command="su-to-root -c /usr/bin/Ceni"
