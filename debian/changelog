@@ -1,11 +1,11 @@
-ceni (1.21) UNRELEASED; urgency=low
+ceni (1.21) unstable; urgency=low
 
-  * NOT RELEASED YET
   * add create-icons target in debian/rules.
   * no longer run imagemagick while building.
   * install svg icon into scalable icon set.
+  * add freshly generated icon set.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 10 Jan 2008 02:07:57 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 10 Jan 2008 02:11:04 +0100
 
 ceni (1.20) unstable; urgency=low
 
