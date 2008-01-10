@@ -1,2 +1,4 @@
 ceni.desktop	usr/share/applications/
 icons		usr/share/
+ceni.svg	usr/share/icons/hicolor/scalable/apps/
+pixmaps		usr/share/

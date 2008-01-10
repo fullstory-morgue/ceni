@@ -3,11 +3,22 @@
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/perlmodule.mk
 
-install/ceni::
+create-icons::
+	# create XDG compatible icons from SVG
+	for i in 16 22 32 48 64 128; do \
+		mkdir -p "icons/hicolor/$${i}x$${i}/apps" ; \
+		inkscape	--export-width=$${i} \
+				--export-height=$${i} \
+				--export-png="$(CURDIR)/icons/hicolor/$${i}x$${i}/apps/ceni.png" \
+					$(CURDIR)/ceni.svg ; \
+	done
+	
+	# create XPM icons for the debian menu system
+	mkdir -p pixmaps
 	convert icons/hicolor/32x32/apps/ceni.png \
-		debian/ceni/usr/share/pixmaps/ceni.xpm
+		pixmaps/ceni.xpm
 	convert icons/hicolor/16x16/apps/ceni.png \
-		debian/ceni/usr/share/pixmaps/ceni-16.xpm
+		pixmaps/ceni-16.xpm
 
 binary-fixup/ceni::
 	rmdir -p --ignore-fail-on-non-empty debian/ceni/usr/lib/perl5
