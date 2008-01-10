@@ -1,9 +1,14 @@
 ceni (1.22) UNRELEASED; urgency=low
 
+  [ Stefan Lippers-Hollmann ]
   * NOT RELEASED YET
   * symlink lower case manpage as well.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 10 Jan 2008 02:18:31 +0100
+  [ Bernard Gray ]
+  * added gear and new colour scheme to ceni icon
+  * update copyright for all contributors, plus gear 
+
+ -- Bernard Gray <bernard.gray@gmail.com>  Thu, 10 Jan 2008 14:25:24 +1100
 
 ceni (1.21) unstable; urgency=low
 
