@@ -4,6 +4,7 @@ include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/perlmodule.mk
 
 create-icons::
+	# requires inkscape and imagemagick to be installed
 	# create XDG compatible icons from SVG
 	for i in 16 22 32 48 64 128; do \
 		mkdir -p "icons/hicolor/$${i}x$${i}/apps" ; \
