@@ -1,3 +1,10 @@
+ceni (1.22) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+  * symlink lower case manpage as well.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 10 Jan 2008 02:18:31 +0100
+
 ceni (1.21) unstable; urgency=low
 
   * add create-icons target in debian/rules.
