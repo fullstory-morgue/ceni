@@ -1,3 +1,9 @@
+ceni (1.25) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 13 Jan 2008 12:45:57 +0100
+
 ceni (1.24) unstable; urgency=low
 
   * Add Ceni_write_config to provide interface for external programs to use
