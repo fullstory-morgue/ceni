@@ -35,8 +35,10 @@ my $target = new Ceni::Backend({
 	file  => $out,
 });
 
-$source->parse_eni;
-$target->set_iface_conf($iface, $source->get_iface_conf($iface));
+$source->parse_eni
+	or exit 1;
+$target->set_iface_conf($iface, $source->get_iface_conf($iface))
+	or exit 1;
 
 __END__
 
