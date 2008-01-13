@@ -1,4 +1,4 @@
-ceni (1.24) UNRELEASED; urgency=low
+ceni (1.24) unstable; urgency=low
 
   * Add Ceni_write_config to provide interface for external programs to use
     Ceni::Backend to write network interface data to /etc/network/interfaces
