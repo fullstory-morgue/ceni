@@ -1,8 +1,10 @@
 ceni (1.24) UNRELEASED; urgency=low
 
-  * NOT RELEASED YET
+  * Add Ceni_write_config to provide interface for external programs to use
+    Ceni::Backend to write network interface data to /etc/network/interfaces
+    based on an external configuration file.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 12 Jan 2008 23:45:18 +0100
+ -- Kel Modderman <kel@otaku42.de>  Sun, 13 Jan 2008 16:14:28 +1000
 
 ceni (1.23) unstable; urgency=low
 

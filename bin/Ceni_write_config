@@ -1,0 +1,99 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use FindBin;
+use lib "$FindBin::RealBin/../lib";
+use Ceni::Backend;
+use Getopt::Long;
+
+my $dbg = 0;
+my $iface;
+my $in;
+my $out = '/etc/network/interfaces';
+
+GetOptions(
+	'debug'    => \$dbg,
+	'iface=s'  => \$iface,
+	'input=s'  => \$in,
+	'output=s' => \$out,
+);
+
+if (not $in or not $iface) {
+	print "Usage: Ceni_write_config --iface <iface> --input <file> [--output <file>]\n";
+	exit 0;
+}
+
+my $source = new Ceni::Backend({
+	debug => $dbg,
+	file  => $in,
+});
+
+my $target = new Ceni::Backend({
+	debug => $dbg,
+	file  => $out,
+});
+
+$source->parse_eni;
+$target->set_iface_conf($iface, $source->get_iface_conf($iface));
+
+__END__
+
+=head1 NAME
+
+Ceni_write_config - write network interface configuration from input file
+
+=head1 SYNOPSIS
+
+  Ceni_write_config --iface <iface> --input <file> [--output <file>]
+
+=head1 DESCRIPTION
+
+This script reads an input file containing ifupdown configuration data, and
+writes the configuration to the output file (default /etc/network/interfaces)
+for the selected interface.
+
+=head1 OPTIONS
+
+=item B<--iface> <iface>
+
+The target network interface with kernel name <iface>.
+Exmaples of <iface> are "eth0", "ath0" and "wlan0".
+
+=item B<--input> <file>
+
+Input file containing network interface ifupdown configuration.
+
+=item B<--output> <file>
+
+Output file to write or update configuration data read from input file.
+If no output file is specified, /etc/network/interfaces is assumed.
+
+=head1 AUTHOR
+
+Kel Modderman, E<lt>kel@otaku42.deE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2007 by Kel Modderman
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this package; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the text of the GPL license can be
+found in /usr/share/common-licenses/GPL.
+
+=cut

@@ -12,5 +12,5 @@ WriteMakefile(
 		        )
 		: ()
 	),
-	EXE_FILES => ['bin/Ceni', 'bin/nicinfo'],
+	EXE_FILES => ['bin/Ceni', 'bin/Ceni_write_config', 'bin/nicinfo'],
 );
