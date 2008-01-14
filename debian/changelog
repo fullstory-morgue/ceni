@@ -1,3 +1,9 @@
+ceni (1.27) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 14 Jan 2008 21:12:22 +0100
+
 ceni (1.26) unstable; urgency=low
 
   * Add extra debug print to Ceni::Backend for each line of udevinfo output.
