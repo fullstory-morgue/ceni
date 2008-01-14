@@ -30,7 +30,7 @@ sub nic_info {
 
 	$i{$_}{'sysfs'} = '/sys/class/net/' . $_ for map {
 		s|.*/||;
-		grep(!/^(lo|br|sit|vmnet)\d*/, $_);
+		grep(!/^(lo|br|sit|tap|vmnet)\d*/, $_);
 	} </sys/class/net/*>;
 
 	for my $if (sort keys %i) {
