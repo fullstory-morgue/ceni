@@ -34,6 +34,8 @@ sub nic_info {
 	} </sys/class/net/*>;
 
 	for my $if (sort keys %i) {
+		my ($bus, $desc);
+
 		open my $udevinfo, '-|', "udevinfo -a -p " . $i{$if}{'sysfs'}
 			or carp "E: could not execute udevinfo -a -p " . $i{$if}{'sysfs'} . "\n";
 		while (<$udevinfo>) {
@@ -44,16 +46,14 @@ sub nic_info {
 		}
 		close $udevinfo;
 
-		if ($i{$if}{'type'} == 1) {
+		if ($i{$if}{'type'} == 1 and $i{$if}{'subsystems'}) {
+			$bus = $i{$if}{'subsystems'};
 			$i{$if}{'connection_type'} = -d $i{$if}{'sysfs'} . "/wireless" ? 'wireless' : 'ethernet';
 		}
 		else {
 			delete $i{$if};
 			next;
 		}
-
-		my $desc;
-		my ($type, $bus) = @{ $i{$if} }{ 'type', 'subsystems' };
 
 		if ($bus eq 'pci' or $bus eq 'ssb') {
 			my ($vendor, $device) = @{ $i{$if} }{ 'vendor', 'device' };
