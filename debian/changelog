@@ -1,4 +1,4 @@
-ceni (1.26) UNRELEASED; urgency=low
+ceni (1.26) unstable; urgency=low
 
   * Add extra debug print to Ceni::Backend for each line of udevinfo output.
 
