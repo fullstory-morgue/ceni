@@ -40,6 +40,7 @@ sub nic_info {
 			or carp "E: could not execute udevinfo -a -p " . $i{$if}{'sysfs'} . "\n";
 		while (<$udevinfo>) {
 			chomp;
+			$self->debug($_);
 			if (m/^\s+([A-Z]+({(.+)})?)=="([^"]+)"$/) {
 				$3 ? $i{$if}{lc $3} ||= $4 : $i{$if}{lc $1} ||= $4;
 			}
