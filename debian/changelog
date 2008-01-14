@@ -1,3 +1,9 @@
+ceni (1.26) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 14 Jan 2008 13:13:01 +0100
+
 ceni (1.25) unstable; urgency=low
 
   * Blacklist tapX network devices from detection in Ceni::Backend.
