@@ -1,4 +1,4 @@
-ceni (1.25) UNRELEASED; urgency=low
+ceni (1.25) unstable; urgency=low
 
   * Blacklist tapX network devices from detection in Ceni::Backend.
   * Remove unused variable $type from nic_info in Ceni::Backend. Reject
