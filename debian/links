@@ -1,2 +1,3 @@
-usr/bin/Ceni                  usr/bin/ceni
-usr/share/man/man1/Ceni.1p.gz usr/share/man/man1/ceni.1p.gz
+usr/bin/Ceni                           usr/bin/ceni
+usr/share/doc/ceni/changelog.Debian.gz usr/share/doc/ceni/changelog.gz
+usr/share/man/man1/Ceni.1p.gz          usr/share/man/man1/ceni.1p.gz
