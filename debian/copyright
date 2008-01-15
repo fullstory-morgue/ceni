@@ -1,85 +1,61 @@
 This package was debianized by Kel Modderman <kel@otaku42.de> on
 Fri, 30 Nov 2007 11:05:14 +1000.
 
-Copyright: 
-    (C) 2007, Kel Modderman <kel@otaku42.de>
+Files: debian/*
+Copyright: (C) 2007, Kel Modderman <kel@otaku42.de>
+License: GPL-2+
+  The Debian packaging information is licensed under the GNU General
+  Public License, version 2 or later.
 
-    ceni.svg/ ceni.png:
-    (C) 2008 Bernard Gray <bernard.gray@gmail.com>
-    (C) 2008 David Creedy <djcreedy@iinet.net.au>
+Files: *
+Copyright: (C) 2007, Kel Modderman <kel@otaku42.de>
+License: GPL-2+
+  The Ceni program is licensed under the GNU General Public License,
+  version 2 or later.
 
-License:
+Files: ceni.*, icons/*, pixmaps/*
+Copyright: (C) 2008 Bernard Gray <bernard.gray@gmail.com>
+           (C) 2008 David Creedy <djcreedy@iinet.net.au>
+           (C) 2007 David Vignoni <david@icon-king.com>
+           (C) 2007 Johann Ollivier Lapeyre <johann@oxygen-icons.org>
+           (C) 2007 Kenneth Wimer <kwwii@bootsplash.org>
+           (C) 2007 Nuno Fernades Pinheiro <nf.pinheiro@gmail.com>
+           (C) 2007 Riccardo Iaconelli <riccardo@oxygen-icons.org>
+           (C) 2007 David Miller <miller@oxygen-icons.org>
+License: CC-ASA-3.0 | LGPL-2+
+  ceni.svg also includes elements from The Oxygen Icon Theme.
+  Licensed under the Creative Common Attribution-ShareAlike 3.0
+  license, as found here:
+    
+    http://creativecommons.org/licenses/by-sa/3.0/
+  
+  or the GNU Library General Public License (with following clarification).
+  
+  Clarification:
+  The GNU Lesser General Public License or LGPL is written for
+  software libraries in the first place. We expressly want the LGPL to
+  be valid for this artwork library too.
 
-    This package is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
- 
-    This package is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
- 
-    You should have received a copy of the GNU General Public License
-    along with this package; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+  KDE Oxygen theme icons is a special kind of software library, it is an
+  artwork library, it's elements can be used in a Graphical User Interface, or
+  GUI.
 
-On Debian systems, the complete text of the GNU General
-Public License can be found in `/usr/share/common-licenses/GPL'.
+  Source code, for this library means:
+   - where they exist, SVG;
+   - otherwise, if applicable, the multi-layered formats xcf or psd, or
+  otherwise png.
 
-The Debian packaging is (C) 2007, Kel Modderman <kel@otaku42.de> and
-is licensed under the GPL, see above.
+  The LGPL in some sections obliges you to make the files carry
+  notices. With images this is in some cases impossible or hardly useful.
 
-ceni.svg also includes elements from The Oxygen Icon Theme
-    Copyright (C) 2007 David Vignoni <david@icon-king.com>
-    Copyright (C) 2007 Johann Ollivier Lapeyre <johann@oxygen-icons.org>
-    Copyright (C) 2007 Kenneth Wimer <kwwii@bootsplash.org>
-    Copyright (C) 2007 Nuno Fernades Pinheiro <nf.pinheiro@gmail.com>
-    Copyright (C) 2007 Riccardo Iaconelli <riccardo@oxygen-icons.org>
-    Copyright (C) 2007 David Miller <miller@oxygen-icons.org>
-        and others
+  With this library a notice is placed at a prominent place in the directory
+  containing the elements. You may follow this practice.
 
-        Licensed under the Creative Common Attribution-ShareAlike 3.0
-        license, as found here:
+  The exception in section 6 of the GNU Lesser General Public License covers
+  the use of elements of this art library in a GUI.
 
-            http://creativecommons.org/licenses/by-sa/3.0/
+On Debian systems, the complete text of the GNU General Public License,
+version 2, can be found in `/usr/share/common-licenses/GPL-2'.
 
-        or the GNU Library General Public License (with following clarification).
-
-            This library is free software; you can redistribute it and/or
-            modify it under the terms of the GNU Library General Public
-            License as published by the Free Software Foundation; either
-            version 2 of the License, or (at your option) any later version.
-
-            This library is distributed in the hope that it will be useful,
-            but WITHOUT ANY WARRANTY; without even the implied warranty of
-            MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-            Library General Public License for more details.
-
-            You should have received a copy of the GNU Library General Public
-            License along with this library; if not, write to the Free Software
-            Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA  02110-1301 USA
-
-        Clarification:
-
-          The GNU Lesser General Public License or LGPL is written for
-          software libraries in the first place. We expressly want the LGPL to
-          be valid for this artwork library too.
-
-          KDE Oxygen theme icons is a special kind of software library, it is an
-          artwork library, it's elements can be used in a Graphical User Interface, or
-          GUI.
-
-          Source code, for this library means:
-           - where they exist, SVG;
-           - otherwise, if applicable, the multi-layered formats xcf or psd, or
-          otherwise png.
-
-          The LGPL in some sections obliges you to make the files carry
-          notices. With images this is in some cases impossible or hardly useful.
-
-          With this library a notice is placed at a prominent place in the directory
-          containing the elements. You may follow this practice.
-
-          The exception in section 6 of the GNU Lesser General Public License covers
-          the use of elements of this art library in a GUI.
+On Debian systems, the complete text of the GNU Lesser General Public License,
+version 2, can be found in `/usr/share/common-licenses/LGPL-2'.
