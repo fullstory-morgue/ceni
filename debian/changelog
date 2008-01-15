@@ -1,3 +1,9 @@
+ceni (1.28) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 15 Jan 2008 10:23:12 +0100
+
 ceni (1.27) unstable; urgency=low
 
   * Remove t/interfaces.eth0.
