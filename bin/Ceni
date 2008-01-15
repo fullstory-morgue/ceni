@@ -28,21 +28,13 @@ my $wcell;
 
 my %conf;
 
-my $help;
-
 #===============================================#
 GetOptions(
 	'act!'    => \$act,
 	'debug'   => \$dbg,
 	'file=s'  => \$eni,
-	'help'    => \$help,
 	'iface=s' => \$iface,
 );
-
-if ($help) {
-	print "I have no help to offer you, but my manpage does.\n";
-	exit 1;
-}
 
 my $ceni = new Curses::UI(
 	-color_support => 1,
