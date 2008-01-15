@@ -73,13 +73,13 @@ create-icons::
 		inkscape --export-width=$${i} \
 			 --export-height=$${i} \
 			 --export-png="$(CURDIR)/icons/hicolor/$${i}x$${i}/apps/ceni.png" \
-				$(CURDIR)/ceni.svg ; \
+				$(CURDIR)/icons/ceni.svg ; \
 	done
 	
 	# create XPM icons for the debian menu system
-	mkdir -p pixmaps
-	convert icons/hicolor/32x32/apps/ceni.png pixmaps/ceni.xpm
-	convert icons/hicolor/16x16/apps/ceni.png pixmaps/ceni-16.xpm
+	mkdir -p icons/pixmaps
+	convert icons/hicolor/32x32/apps/ceni.png icons/pixmaps/ceni.xpm
+	convert icons/hicolor/16x16/apps/ceni.png icons/pixmaps/ceni-16.xpm
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary

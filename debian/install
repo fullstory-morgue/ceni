@@ -1,4 +1,4 @@
-ceni.desktop	usr/share/applications/
-ceni.svg	usr/share/icons/hicolor/scalable/apps/
-icons		usr/share/
-pixmaps		usr/share/
+ceni.desktop   usr/share/applications/
+icons/ceni.svg usr/share/icons/hicolor/scalable/apps/
+icons/hicolor  usr/share/icons
+icons/pixmaps  usr/share/
