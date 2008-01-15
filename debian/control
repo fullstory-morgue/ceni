@@ -5,6 +5,8 @@ Maintainer: Kel Modderman <kel@otaku42.de>
 Uploaders: Stefan Lippers-Hollmann <s.l-h@gmx.de>
 Build-Depends: debhelper (>= 5)
 Build-Depends-Indep: perl (>= 5.6.0-16)
+Vcs-Svn: svn://svn.berlios.de/fullstory/ceni/trunk
+Vcs-Browser: http://svn.berlios.de/wsvn/fullstory/ceni/trunk/
 Standards-Version: 3.7.3
 
 Package: ceni
