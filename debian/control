@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Kel Modderman <kel@otaku42.de>
 Uploaders: Stefan Lippers-Hollmann <s.l-h@gmx.de>
-Build-Depends: cdbs, debhelper (>= 5)
+Build-Depends: debhelper (>= 5)
 Build-Depends-Indep: perl (>= 5.6.0-16)
 Standards-Version: 3.7.3
 
@@ -12,5 +12,7 @@ Architecture: all
 Depends: ${perl:Depends}, libcurses-ui-perl, libterm-readkey-perl, ifupdown, udev
 Recommends: wireless-tools, wpasupplicant, resolvconf
 Conflicts: configure-networkcard (< 0.7.22)
-Description: Curses /etc/network/interfaces
- A lightweight User Interface to configuring network devices via ifupdown.
+Description: Curses interface to /etc/network/interfaces
+ A Curses user interface for configuring network interfaces with ifupdown.
+ Ceni can manage basic network interface ifupdown configuration stanzas for
+ ethernet and wireless devices.

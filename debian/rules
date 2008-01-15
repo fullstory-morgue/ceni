@@ -1,25 +1,85 @@
 #!/usr/bin/make -f
 
-include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/class/perlmodule.mk
+# If set to a true value then MakeMaker's prompt function will
+# always return the default without waiting for user input.
+export PERL_MM_USE_DEFAULT=1
+
+PACKAGE = $(shell dh_listpackages)
+
+ifndef PERL
+PERL = /usr/bin/perl
+endif
+
+TMP = $(CURDIR)/debian/$(PACKAGE)
+
+build: build-stamp
+build-stamp:
+	dh_testdir
+	
+	$(PERL) Makefile.PL INSTALLDIRS=vendor
+	$(MAKE)
+	$(MAKE) test
+	
+	touch @
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean build-stamp install-stamp
+	
+	if [ -r Makefile ]; then \
+		$(MAKE) distclean; \
+	fi
+
+install: build install-stamp
+install-stamp:
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	
+	$(MAKE) install DESTDIR=$(TMP) PREFIX=/usr
+	
+	if [ -d $(TMP)/usr/lib/perl5 ]; then \
+		rmdir --ignore-fail-on-non-empty --parents --verbose \
+			$(TMP)/usr/lib/perl5; \
+	fi
+	
+	touch @
+
+binary-arch:
+# We have nothing to do by default.
+
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_install
+	dh_installdocs
+	dh_installchangelogs debian/changelog
+	dh_installmenu
+	dh_link
+	dh_perl
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
 
 create-icons::
 	# requires inkscape and imagemagick to be installed
 	# create XDG compatible icons from SVG
 	for i in 16 22 32 48 64 128; do \
 		mkdir -p "icons/hicolor/$${i}x$${i}/apps" ; \
-		inkscape	--export-width=$${i} \
-				--export-height=$${i} \
-				--export-png="$(CURDIR)/icons/hicolor/$${i}x$${i}/apps/ceni.png" \
-					$(CURDIR)/ceni.svg ; \
+		inkscape --export-width=$${i} \
+			 --export-height=$${i} \
+			 --export-png="$(CURDIR)/icons/hicolor/$${i}x$${i}/apps/ceni.png" \
+				$(CURDIR)/ceni.svg ; \
 	done
 	
 	# create XPM icons for the debian menu system
 	mkdir -p pixmaps
-	convert icons/hicolor/32x32/apps/ceni.png \
-		pixmaps/ceni.xpm
-	convert icons/hicolor/16x16/apps/ceni.png \
-		pixmaps/ceni-16.xpm
+	convert icons/hicolor/32x32/apps/ceni.png pixmaps/ceni.xpm
+	convert icons/hicolor/16x16/apps/ceni.png pixmaps/ceni-16.xpm
 
-binary-fixup/ceni::
-	rmdir -p --ignore-fail-on-non-empty debian/ceni/usr/lib/perl5
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary
