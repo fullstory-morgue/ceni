@@ -1433,7 +1433,7 @@ Ceni - Curses /etc/network/interfaces
 
 =head1 DESCRIPTION
 
-A lightweight User Interface to configuring network devices via ifupdown.
+A Curses user interface for configuring network interfaces with ifupdown.
 
 =head1 OPTIONS
 
