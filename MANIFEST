@@ -4,3 +4,5 @@ README
 t/Ceni-Backend.t
 lib/Ceni/Backend.pm
 bin/Ceni
+bin/Ceni_write_config
+bin/nicinfo
