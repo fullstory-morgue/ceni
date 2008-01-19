@@ -44,6 +44,11 @@ my $ceni = new Curses::UI(
 
 $ceni->set_binding(sub { exit 1; }, "\cC", "\cQ");
 
+if (not -s $eni) {
+	$ceni->error("WARNING! $eni does not exist!\n");
+	exit 1;
+}
+
 my $bend = new Ceni::Backend({
 	act   => $act,
 	debug => $dbg,

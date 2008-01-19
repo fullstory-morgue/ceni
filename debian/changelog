@@ -1,8 +1,9 @@
 ceni (1.29) UNRELEASED; urgency=low
 
-  * NOT RELEASED YET
+  * Bail out with error message if system doesn't have existing
+    /etc/network/interfaces file.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 18 Jan 2008 22:56:56 +0100
+ -- Kel Modderman <kel@otaku42.de>  Sun, 20 Jan 2008 00:09:52 +1000
 
 ceni (1.28) unstable; urgency=low
 
