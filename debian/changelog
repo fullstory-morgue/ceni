@@ -1,4 +1,4 @@
-ceni (1.29) UNRELEASED; urgency=low
+ceni (1.29) unstable; urgency=low
 
   * Bail out with error message if system doesn't have existing
     /etc/network/interfaces file.
