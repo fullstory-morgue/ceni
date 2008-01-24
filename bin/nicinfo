@@ -33,9 +33,7 @@ if ($help) {
 	exit 0;
 }
 
-my $bend = new Ceni::Backend({
-	debug => $dbg,
-});
+my $bend = new Ceni::Backend({ debug => $dbg, });
 
 $bend->nic_info;
 
@@ -62,13 +60,8 @@ for my $if (@i) {
 		$nic->{'connection_type'} eq 'ethernet' or next;
 	}
 
-	$i{$if} = $if;
-	
-	for ('connection_type', 'drivers', 'subsystems', 'address') {
-		$i{$if} .= " " . $nic->{$_};
-	}
-	
-	$i{$if} .= " (" . $nic->{'desc'} . ")";
+	$i{$if} = join(',',
+		$if, map { $nic->{$_}; } ('connection_type', 'drivers', 'subsystems', 'address', 'desc'));
 }
 
 for my $if (sort keys %i) {
