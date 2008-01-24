@@ -8,8 +8,6 @@ use lib "$FindBin::RealBin/../lib";
 use Ceni::Backend;
 use Getopt::Long;
 
-use Data::Dumper;
-
 my $dbg = 0;
 my $iface;
 my $in = '/etc/network/interfaces';
