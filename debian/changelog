@@ -1,4 +1,4 @@
-ceni (1.31) UNRELEASED; urgency=low
+ceni (1.31) unstable; urgency=low
 
   * nicinfo: use comma field seperator as per xadras request.
   * Add Ceni_read_config to assist in allowing external programs an easier way
