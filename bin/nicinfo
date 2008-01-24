@@ -20,6 +20,8 @@ my $wifi;
 my @i;
 my %i;
 
+my @f = ('connection_type', 'drivers', 'subsystems', 'address', 'desc');
+
 GetOptions(
 	'debug'    => \$dbg,
 	'ethernet' => \$ether,
@@ -60,8 +62,7 @@ for my $if (@i) {
 		$nic->{'connection_type'} eq 'ethernet' or next;
 	}
 
-	$i{$if} = join(',',
-		$if, map { $nic->{$_}; } ('connection_type', 'drivers', 'subsystems', 'address', 'desc'));
+	$i{$if} = join(',', $if, map { $nic->{$_}; } @f);
 }
 
 for my $if (sort keys %i) {
