@@ -1,4 +1,4 @@
-ceni (1.32) UNRELEASED; urgency=low
+ceni (1.32) unstable; urgency=low
 
   * Fix presentation of non-encrypted networks in wireless selection form.
 
