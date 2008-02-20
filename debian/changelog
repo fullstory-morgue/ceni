@@ -1,3 +1,9 @@
+ceni (1.34) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed, 20 Feb 2008 21:53:15 +0100
+
 ceni (1.33) unstable; urgency=low
 
   * appease lintian and write (C) as © in debian/copyright.
