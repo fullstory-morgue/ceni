@@ -1,8 +1,12 @@
 ceni (1.34) UNRELEASED; urgency=low
 
+  [ Stefan Lippers-Hollmann ]
   * NOT RELEASED YET
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed, 20 Feb 2008 21:53:15 +0100
+  [ Bernard Gray ]
+  * remember to add the wip icon this time :/ 
+
+ -- Bernard Gray <bernard.gray@gmail.com>  Mon, 03 Mar 2008 08:45:51 +1100
 
 ceni (1.33) unstable; urgency=low
 
