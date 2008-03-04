@@ -7,8 +7,9 @@ ceni (1.34) UNRELEASED; urgency=low
   * remember to add the wip icon this time :/ 
   * clean up colouring of wip icon text 
   * add a little doovalacka to make it a bit unique  
+  * remove clip and clone info from wip for kde3/4 compat 
 
- -- Bernard Gray <bernard.gray@gmail.com>  Tue, 04 Mar 2008 13:26:33 +1100
+ -- Bernard Gray <bernard.gray@gmail.com>  Tue, 04 Mar 2008 13:46:45 +1100
 
 ceni (1.33) unstable; urgency=low
 
