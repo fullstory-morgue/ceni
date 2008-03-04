@@ -6,8 +6,9 @@ ceni (1.34) UNRELEASED; urgency=low
   [ Bernard Gray ]
   * remember to add the wip icon this time :/ 
   * clean up colouring of wip icon text 
+  * add a little doovalacka to make it a bit unique  
 
- -- Bernard Gray <bernard.gray@gmail.com>  Tue, 04 Mar 2008 13:25:13 +1100
+ -- Bernard Gray <bernard.gray@gmail.com>  Tue, 04 Mar 2008 13:26:33 +1100
 
 ceni (1.33) unstable; urgency=low
 
