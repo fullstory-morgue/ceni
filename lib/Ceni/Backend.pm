@@ -25,6 +25,12 @@ sub new {
 
 sub nic_info {
 	my ($self) = (shift);
+	
+	my $udevinfo_cmd = `which udevadm` || `which udevinfo`;
+	chomp($udevinfo_cmd);
+	if ($udevinfo_cmd =~ /udevadm$/) {
+		$udevinfo_cmd .= " info";
+	}
 
 	my %i;
 
@@ -36,8 +42,8 @@ sub nic_info {
 	for my $if (sort keys %i) {
 		my ($bus, $desc);
 
-		open my $udevinfo, '-|', "udevinfo -a -p " . $i{$if}{'sysfs'}
-			or carp "E: could not execute udevinfo -a -p " . $i{$if}{'sysfs'} . "\n";
+		open my $udevinfo, '-|', "$udevinfo_cmd -a -p " . $i{$if}{'sysfs'}
+			or carp "E: could not execute $udevinfo_cmd -a -p " . $i{$if}{'sysfs'} . "\n";
 		while (<$udevinfo>) {
 			chomp;
 			$self->debug($_);
