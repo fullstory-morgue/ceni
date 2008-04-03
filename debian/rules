@@ -65,6 +65,9 @@ binary-indep: build install
 	dh_md5sums
 	dh_builddeb
 
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary
+
 create-icons::
 	# requires inkscape and imagemagick to be installed
 		@if [ ! -x /usr/bin/convert ]; then \
@@ -89,6 +92,3 @@ create-icons::
 	mkdir -p icons/pixmaps
 	convert icons/hicolor/32x32/apps/ceni.png icons/pixmaps/ceni.xpm
 	convert icons/hicolor/16x16/apps/ceni.png icons/pixmaps/ceni-16.xpm
-
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary

@@ -523,7 +523,7 @@ along with this package; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
 MA 02110-1301, USA.
 
-On Debian GNU/Linux systems, the text of the GPL license can be
-found in /usr/share/common-licenses/GPL.
+On Debian GNU/Linux systems, the text of the GPL-2 license can be
+found in /usr/share/common-licenses/GPL-2.
 
 =cut
