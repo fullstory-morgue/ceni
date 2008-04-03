@@ -491,14 +491,13 @@ Ceni::Backend - Perl extension for Ceni
 =head1 SYNOPSIS
 
   use Ceni::Backend;
-  
+
   my $ceni = Ceni::Backend->new( \%options );
 
 =head1 DESCRIPTION
 
-Stub documentation for Ceni::Backend, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
+This is the backend for Ceni(8), it is not provided for use by scripts
+not provided by the ceni package, therefore remains undocuemnted.
 
 =head1 AUTHOR
 
