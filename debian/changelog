@@ -1,15 +1,11 @@
 ceni (1.35) UNRELEASED; urgency=low
 
-  [ Stefan Lippers-Hollmann ]
-  * NOT RELEASED YET
-
-  [ Kel Modderman ]
-  * DO NOT RELEASE
   * Be more precise about location of GPL-2 license on Debian system.
   * Replace Ceni::Backend description text with something other than h2xs
     boilerplate, but no more informative for outsiders.
+  * Clear the terminal upon program exit more effectively.
 
- -- Kel Modderman <kel@otaku42.de>  Thu, 03 Apr 2008 13:21:26 +1000
+ -- Kel Modderman <kel@otaku42.de>  Tue, 22 Apr 2008 17:07:41 +1000
 
 ceni (1.34) unstable; urgency=low
 

@@ -1409,9 +1409,10 @@ sub main () {
 		
 		last;
 	}
-}
 
-$SIG{QUIT} = sub { system("clear"); };
+	$ceni->leave_curses;
+	system("clear");
+}
 
 main();
 
