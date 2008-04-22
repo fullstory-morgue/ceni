@@ -1,4 +1,4 @@
-ceni (1.35) UNRELEASED; urgency=low
+ceni (1.35) unstable; urgency=low
 
   * Be more precise about location of GPL-2 license on Debian system.
   * Replace Ceni::Backend description text with something other than h2xs
