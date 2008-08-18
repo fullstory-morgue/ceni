@@ -1,9 +1,5 @@
-ceni (1.37) UNRELEASED; urgency=low
+ceni (1.37) unstable; urgency=low
 
-  [ Stefan Lippers-Hollmann ]
-  * NOT RELEASED YET
-
-  [ Kel Modderman ]
   * Allow dns-{nameservers,search} to be configurable for DHCP interfaces too.
 
  -- Kel Modderman <kel@otaku42.de>  Tue, 19 Aug 2008 02:35:04 +1000
