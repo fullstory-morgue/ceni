@@ -1000,6 +1000,7 @@ sub netw_conf_form {
 			if ($s{'method'}->get() ne 'static') {
 				foreach (@static) {
 					next unless $s{$_};
+					next if /^dns/;
 					$s{$_}->focusable(0);
 					$s{$_}->set_color_bfg('red');
 					$s{$_}->text('');
@@ -1183,12 +1184,12 @@ sub netw_conf_form {
 		$s{'dns-search'} = $network_form->add(
 			'dnssearch_input', 'TextEntry',
 			-border    => 1,
-			-bfg       => 'red',
+			-bfg       => 'green',
 			-x         => 55,
 			-y         => 11,
 			-width     => 20,
 			-ipadleft  => 1,
-			-focusable => 0,
+			-focusable => 1,
 		);
 
 		$network_form->add(
@@ -1206,12 +1207,12 @@ sub netw_conf_form {
 			'dnsnameservers_input', 'TextEntry',
 			-border       => 1,
 			-showoverflow => 0,
-			-bfg          => 'red',
+			-bfg          => 'green',
 			-x            => 15,
 			-y            => 14,
 			-width        => 60,
 			-ipadleft     => 1,
-			-focusable    => 0,
+			-focusable    => 1,
 		);
 	}
 

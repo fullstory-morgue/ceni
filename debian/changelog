@@ -1,8 +1,12 @@
 ceni (1.37) UNRELEASED; urgency=low
 
+  [ Stefan Lippers-Hollmann ]
   * NOT RELEASED YET
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 08 Jun 2008 15:29:07 +0200
+  [ Kel Modderman ]
+  * Allow dns-{nameservers,search} to be configurable for DHCP interfaces too.
+
+ -- Kel Modderman <kel@otaku42.de>  Tue, 19 Aug 2008 02:35:04 +1000
 
 ceni (1.36) unstable; urgency=low
 
