@@ -1,8 +1,10 @@
 ceni (1.38) UNRELEASED; urgency=low
 
   * NOT RELEASED YET
+  * Use Terminal=true (instead of yes) in ceni.desktop to fix issue on
+    XFCE. Thanks x-un-i.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 18 Aug 2008 19:11:27 +0200
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 30 Aug 2008 02:24:23 +1000
 
 ceni (1.37) unstable; urgency=low
 
