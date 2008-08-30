@@ -1,6 +1,5 @@
-ceni (1.38) UNRELEASED; urgency=low
+ceni (1.38) unstable; urgency=low
 
-  * NOT RELEASED YET
   * Use Terminal=true (instead of yes) in ceni.desktop to fix issue on
     XFCE. Thanks x-un-i.
 
