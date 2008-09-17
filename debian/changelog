@@ -1,4 +1,4 @@
-ceni (1.39) UNRELEASED; urgency=low
+ceni (1.39) unstable; urgency=low
 
   * Simplify udevadm/udevinfo detection.
   * Allow /e/n/i to be readable by root + root group.
