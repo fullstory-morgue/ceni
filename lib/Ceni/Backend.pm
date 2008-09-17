@@ -25,14 +25,9 @@ sub new {
 
 sub nic_info {
 	my ($self) = (shift);
-	
-	my $udevinfo_cmd = `which udevadm` || `which udevinfo`;
-	chomp($udevinfo_cmd);
-	if ($udevinfo_cmd =~ /udevadm$/) {
-		$udevinfo_cmd .= " info";
-	}
 
 	my %i;
+	my $udevinfo_cmd = (-x '/sbin/udevadm') ? 'udevadm info' : 'udevinfo';
 
 	$i{$_}{'sysfs'} = '/sys/class/net/' . $_ for map {
 		s|.*/||;
@@ -308,8 +303,8 @@ sub set_iface_conf {
 	}
 
 	if (-w $self->{'file'}) {
-		chmod 0600, $self->{'file'}
-			or carp "E: failed to chmod 0600 ". $self->{'file'};
+		chmod 0640, $self->{'file'}
+			or carp "E: failed to chmod 0640 ". $self->{'file'};
 	}
 }
 
