@@ -1068,7 +1068,12 @@ sub netw_conf_form {
 		-regexp    => '/^[0-9\.]*$/',
 		-onblur    => sub {
 			if (is_ip($s{'address'}->get)) {
-				if ($s{'address'}->get =~ m/^(\d+\.\d+\.\d+\.)\d+$/) {
+				if ($s{'address'}->get =~ m/^(10\.\d+\.\d+\.)\d+$/) {
+					$s{'network'}->text('10.0.0.0');
+					$s{'broadcast'}->text('10.255.255.255');
+					$s{'netmask'}->text('255.0.0.0');
+				}
+				elsif ($s{'address'}->get =~ m/^(\d+\.\d+\.\d+\.)\d+$/) {
 					$s{'network'}->text($1 . '0');
 					$s{'broadcast'}->text($1 . '255');
 					$s{'netmask'}->text('255.255.255.0');

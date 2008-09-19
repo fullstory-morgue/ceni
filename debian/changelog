@@ -1,8 +1,12 @@
 ceni (1.40) UNRELEASED; urgency=low
 
+  [ Stefan Lippers-Hollmann ]
   * NOT RELEASED YET
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed, 17 Sep 2008 14:47:30 +0200
+  [ Bernard Gray ]
+  * improve auto field (netmask/broadcast etc) filling with 10.0.0.0/8 support
+
+ -- Bernard Gray <bernard.gray@gmail.com>  Fri, 19 Sep 2008 14:13:58 +1000
 
 ceni (1.39) unstable; urgency=low
 
