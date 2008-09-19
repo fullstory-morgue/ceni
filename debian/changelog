@@ -1,7 +1,4 @@
-ceni (1.40) UNRELEASED; urgency=low
-
-  [ Stefan Lippers-Hollmann ]
-  * NOT RELEASED YET
+ceni (1.40) unstable; urgency=low
 
   [ Bernard Gray ]
   * improve auto field (netmask/broadcast etc) filling with 10.0.0.0/8 support
