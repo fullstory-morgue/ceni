@@ -7,8 +7,12 @@ ceni (1.40) UNRELEASED; urgency=low
   * improve auto field (netmask/broadcast etc) filling with 10.0.0.0/8 support
   * style change for 10.0.0.0 auto field to suit better
   * add support for 172.0.0.0/16 support - strictly speaking, this should be /12
+  * add more logical behaviour to network add form 
+    - clear text input fields when you type in them
+    - this only affects fields where it makes sense ie fields that require an 
+      ip address, not those that accept plaintext/hostnames for example
 
- -- Bernard Gray <bernard.gray@gmail.com>  Fri, 19 Sep 2008 22:28:51 +1000
+ -- Bernard Gray <bernard.gray@gmail.com>  Sat, 20 Sep 2008 00:00:04 +1000
 
 ceni (1.39) unstable; urgency=low
 

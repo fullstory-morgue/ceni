@@ -1066,6 +1066,7 @@ sub netw_conf_form {
 		-ipadleft  => 1,
 		-focusable => 0,
 		-regexp    => '/^[0-9\.]*$/',
+		-onchange => sub { $s{'address'}->delete_till_eol(); },
 		-onblur    => sub {
 			if (is_ip($s{'address'}->get)) {
 				if ($s{'address'}->get =~ m/^(10\.)\d+\.\d+\.\d+$/) {
@@ -1108,6 +1109,7 @@ sub netw_conf_form {
 		-ipadleft  => 1,
 		-focusable => 0,
 		-regexp    => '/^[0-9\.]*$/',
+		-onchange => sub { $s{'network'}->delete_till_eol(); },
 	);
 
 	$network_form->add(
@@ -1131,6 +1133,7 @@ sub netw_conf_form {
 		-ipadleft  => 1,
 		-focusable => 0,
 		-regexp    => '/^[0-9\.]*$/',
+		-onchange => sub { $s{'netmask'}->delete_till_eol(); },
 	);
 
 	$network_form->add(
@@ -1154,6 +1157,7 @@ sub netw_conf_form {
 		-ipadleft  => 1,
 		-focusable => 0,
 		-regexp    => '/^[0-9\.]*$/',
+		-onchange => sub { $s{'broadcast'}->delete_till_eol(); },
 	);
 
 	$network_form->add(
@@ -1177,6 +1181,7 @@ sub netw_conf_form {
 		-ipadleft  => 1,
 		-focusable => 0,
 		-regexp    => '/^[0-9\.]*$/',
+		-onchange => sub { $s{'gateway'}->delete_till_eol(); },
 	);
 
 	if (-x '/sbin/resolvconf') {
