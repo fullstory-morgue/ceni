@@ -44,8 +44,8 @@ my $ceni = new Curses::UI(
 
 $ceni->set_binding(sub { exit 1; }, "\cC", "\cQ");
 
-if (not -s $eni) {
-	$ceni->error("WARNING! $eni does not exist!\n");
+if (not -r $eni) {
+	$ceni->error("WARNING! $eni cannot be read!\n");
 	exit 1;
 }
 

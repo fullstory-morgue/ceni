@@ -12,7 +12,11 @@ ceni (1.40) UNRELEASED; urgency=low
     - this only affects fields where it makes sense ie fields that require an 
       ip address, not those that accept plaintext/hostnames for example
 
- -- Bernard Gray <bernard.gray@gmail.com>  Sat, 20 Sep 2008 00:00:04 +1000
+  [ Kel Modderman ]
+  * Test for read capability of e/n/i, to avoid baling out without error
+    under some circumstances.
+
+ -- Kel Modderman <kel@otaku42.de>  Sat, 20 Sep 2008 00:32:02 +1000
 
 ceni (1.39) unstable; urgency=low
 
