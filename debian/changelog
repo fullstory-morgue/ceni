@@ -1,8 +1,15 @@
 ceni (1.41) UNRELEASED; urgency=low
 
+  [ Stefan Lippers-Hollmann ]
   * NOT RELEASED YET
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 19 Sep 2008 22:39:21 +0200
+  [ Kel Modderman ]
+  * Add is_wireless method to Ceni::Backend in preparation for the
+    removal of the wireless sysfs attribute in Linux 2.6.27. Instead
+    detect cfg80211 phy80211 sysfs attribute, falling back to the use of
+    iwgetid --protocol to test for WEXT support.
+
+ -- Kel Modderman <kel@otaku42.de>  Fri, 26 Sep 2008 07:04:18 +1000
 
 ceni (1.40) unstable; urgency=low
 

@@ -23,6 +23,29 @@ sub new {
 	return $self;
 }
 
+sub is_wireless {
+	my ($self, $iface) = (shift, shift);
+	my $retval = 0;
+
+	if (-d "/sys/class/net/$iface/phy80211") {
+		# cfg80211
+		$retval++;
+	}
+	else {
+		# WEXT
+		open my $iwgetid, '-|', "iwgetid --protocol " . $iface
+			or carp "W: could not execute iwgetid --protocol " . $iface . "\n";
+		while (<$iwgetid>) {
+			print;
+			chomp;
+			m/^$iface/ and $retval++;
+		}
+		close $iwgetid;
+	}
+
+	return $retval;
+}
+
 sub nic_info {
 	my ($self) = (shift);
 
@@ -50,7 +73,7 @@ sub nic_info {
 
 		if ($i{$if}{'type'} == 1 and $i{$if}{'subsystems'}) {
 			$bus = $i{$if}{'subsystems'};
-			$i{$if}{'connection_type'} = -d $i{$if}{'sysfs'} . "/wireless" ? 'wireless' : 'ethernet';
+			$i{$if}{'connection_type'} = $self->is_wireless($if) ? 'wireless' : 'ethernet';
 		}
 		else {
 			delete $i{$if};
