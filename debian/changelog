@@ -1,3 +1,9 @@
+ceni (1.42) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 25 Sep 2008 23:23:32 +0200
+
 ceni (1.41) unstable; urgency=low
 
   * Add is_wireless method to Ceni::Backend in preparation for the
