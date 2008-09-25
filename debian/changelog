@@ -1,9 +1,5 @@
-ceni (1.41) UNRELEASED; urgency=low
+ceni (1.41) unstable; urgency=low
 
-  [ Stefan Lippers-Hollmann ]
-  * NOT RELEASED YET
-
-  [ Kel Modderman ]
   * Add is_wireless method to Ceni::Backend in preparation for the
     removal of the wireless sysfs attribute in Linux 2.6.27. Instead
     detect cfg80211 phy80211 sysfs attribute, falling back to the use of
