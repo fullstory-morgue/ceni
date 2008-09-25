@@ -36,7 +36,6 @@ sub is_wireless {
 		open my $iwgetid, '-|', "iwgetid --protocol " . $iface
 			or carp "W: could not execute iwgetid --protocol " . $iface . "\n";
 		while (<$iwgetid>) {
-			print;
 			chomp;
 			m/^$iface/ and $retval++;
 		}
