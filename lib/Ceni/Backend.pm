@@ -215,8 +215,11 @@ sub parse_eni {
 sub get_iface_conf {
 	my ($self, $iface) = (shift, shift);
 
-	if ($self->{'_data'}->{'eni'}->{$iface}) {
+	if ($iface and $self->{'_data'}->{'eni'}->{$iface}) {
 		return $self->{'_data'}->{'eni'}->{$iface};
+	}
+	elsif (not $iface) {
+		return $self->{'_data'}->{'eni'};
 	}
 
 	return undef;

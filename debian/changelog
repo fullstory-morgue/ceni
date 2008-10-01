@@ -1,8 +1,13 @@
 ceni (1.42) UNRELEASED; urgency=low
 
+  [ Stefan Lippers-Hollmann ]
   * NOT RELEASED YET
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 25 Sep 2008 23:23:32 +0200
+  [ Niall Walsh ]
+  * Add basic support to enable wpa-roam and edit logical interfaces.
+  * DO NOT RELEASE YET
+
+ -- Niall Walsh <niallwalsh@users.berlios.de>  Thu, 02 Oct 2008 00:55:36 +0100
 
 ceni (1.41) unstable; urgency=low
 

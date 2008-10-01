@@ -164,6 +164,15 @@ sub interface_form {
 		$i{$if} .= " (" . $nic->{'drivers'} . ")";
 	}
 
+	my @v = sort keys %{ $bend->get_iface_conf() };
+
+	for my $if (@v) {
+		if ($if !~ /^lo$/ and length($i{$if}) == 0) {
+			push(@i, $if);
+			$i{$if} = $if;
+		}
+	}
+
 	my $interface_form = $ceni->add(
 		'interface_form', 'Window',
 		-title  => 'Network Interfaces',
@@ -225,6 +234,11 @@ sub interface_form {
 
 sub configure_form {
 	my $current = $bend->get_iface_conf($iface);
+
+	if (not $bend->is_nic_valid($iface)) {
+		return 1;
+	}
+
 	my $state   = $bend->ifstate($iface);
 
 	if (not $current->{'method'}) {
@@ -303,6 +317,10 @@ sub configure_form {
 sub wifi_scan_form {
 	$wcell = undef;
 
+	if (not $bend->is_nic_valid($iface)) {
+		return 1;
+	}
+
 	my $nic = $bend->get_nic_info($iface);
 	
 	if ($nic->{'connection_type'} ne 'wireless') {
@@ -375,6 +393,24 @@ sub wifi_scan_form {
 		-onchange   => sub { shift->parent->lose_focus; },
 	);
 
+	my $wifi_scan_roam = $wifi_scan_form->add(
+		'wireless_scan_roam',
+		'Buttonbox',
+		-x       => 1,
+		-y       => 17,
+		-width   => 12,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [ {
+			-label   => '[  Roam  ]',
+			-onpress => sub {
+				$wcell = '--wpa-roam--';
+				shift->parent->lose_focus;
+			}
+		} ]
+	);
+
 	my $wifi_scan_ignore = $wifi_scan_form->add(
 		'wireless_scan_ignore',
 		'Buttonbox',
@@ -436,6 +472,35 @@ sub wifi_scan_form {
 	$wifi_scan_form->set_binding(sub { exit 1; }, "\cC", "\cQ");
 	$wifi_scan_form->modalfocus;
 	$ceni->delete('wireless_scan_form');
+
+	if ($wcell == '--wpa-roam--') {
+		if (not -e '/etc/wpa_supplicant/wpa_supplicant.conf') {
+			open(EX, '/usr/share/doc/wpasupplicant/examples/wpa-roam.conf');
+			my $wpasupp;
+			my $wpasuppbuff;
+			while (read(EX, $wpasuppbuff, 4096)) {
+				$wpasuppbuff =~ s/\#(update\_config\=1\s)/\n$1/m;
+				$wpasupp .= $wpasuppbuff;
+			}
+			close(EX);
+			open(WS, '>/etc/wpa_supplicant/wpa_supplicant.conf');
+			print WS $wpasupp;
+			close(WS);
+			my ($login, $pass, $uid, $gid) = getpwnam('netdev');
+			chown 0, $gid, '/etc/wpa_supplicant/wpa_supplicant.conf';
+			chmod 0660, '/etc/wpa_supplicant/wpa_supplicant.conf';
+		}
+		$bend->rem_iface_conf($iface);
+		$conf{'class'}  = 'allow-hotplug';
+		$conf{'method'} = 'manual';
+		$conf{'stanza'}{'wpa-roam'} =
+		        '/etc/wpa_supplicant/wpa_supplicant.conf';
+		if (not $bend->get_iface_conf('default')) {
+			$bend->set_iface_conf('default', { 'method' => 'dhcp' });
+		}
+		$wcell = '';
+		return 1;
+	}
 
 	$wcell ||= $wifi_ssid_list->get;
 
@@ -957,6 +1022,8 @@ sub netw_conf_form {
 	my $accept;
 
 	my $current = $bend->get_iface_conf($iface);
+
+	return 1 if (length($conf{'stanza'}{'wpa-roam'}));
 
 	my @static = (
 		'address', 'netmask', 'network', 'broadcast', 'gateway',
