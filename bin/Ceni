@@ -49,11 +49,7 @@ if (not -r $eni) {
 	exit 1;
 }
 
-my $bend = new Ceni::Backend({
-	act   => $act,
-	debug => $dbg,
-	file  => $eni,
-});
+my $bend = new Ceni::Backend({ act => $act, debug => $dbg, file => $eni, });
 
 #===============================================#
 #%conf = (
@@ -114,7 +110,7 @@ sub is_hex {
 
 sub psk_is_valid {
 	my ($enc, $psk) = (shift, shift);
-	my $psk_len     = length $psk;
+	my $psk_len = length $psk;
 
 	if ($enc eq 'WEP') {
 		if (is_hex($psk) and $psk_len =~ m/^(10|26|32|58)$/) {
@@ -156,11 +152,11 @@ sub interface_form {
 		my $nic = $bend->get_nic_info($if);
 
 		$i{$if} = sprintf "%-6s", $if;
-		
+
 		for ('connection_type', 'address', 'desc') {
 			$i{$if} .= " " . $nic->{$_};
 		}
-		
+
 		$i{$if} .= " (" . $nic->{'drivers'} . ")";
 	}
 
@@ -215,11 +211,10 @@ sub interface_form {
 		-height  => 4,
 		-border  => 1,
 		-bfg     => 'blue',
-		-buttons => [{
+		-buttons => [ {
 				-label   => '[  Exit  ]',
 				-onpress => sub { exit 0; }
-			},
-		],
+			}, ],
 	);
 
 	$interface_list->focus();
@@ -239,7 +234,7 @@ sub configure_form {
 		return 1;
 	}
 
-	my $state   = $bend->ifstate($iface);
+	my $state = $bend->ifstate($iface);
 
 	if (not $current->{'method'}) {
 		return 1;
@@ -258,7 +253,8 @@ sub configure_form {
 
 	$configure_form->add(
 		'configure_title', 'TextEditor',
-		-text => "The selected network interface, $iface, is already configured.\n"
+		-text =>
+		        "The selected network interface, $iface, is already configured.\n"
 		        . "Would you like to reconfigure, remove or cancel setup of $iface?\n",
 		-border    => 0,
 		-x         => 3,
@@ -303,7 +299,7 @@ sub configure_form {
 		$ceni->status("Removing ifupdown settings for $iface...");
 		$bend->ifdown($iface);
 		$ceni->nostatus();
-		
+
 		if ($configure_list->get() eq 'deconfigure') {
 			$bend->rem_iface_conf($iface);
 			$iface = undef;
@@ -322,7 +318,7 @@ sub wifi_scan_form {
 	}
 
 	my $nic = $bend->get_nic_info($iface);
-	
+
 	if ($nic->{'connection_type'} ne 'wireless') {
 		return 1;
 	}
@@ -336,26 +332,26 @@ sub wifi_scan_form {
 
 	for my $c (@s) {
 		my $cell = $bend->get_iwlist_res($c);
-		
+
 		$s{$c} = " $c  ";
 
 		if ($cell->{'mode'} ne 'master') {
-			$s{$c} .= sprintf "%-25s", '"' . $cell->{'ssid'} . '"' .
-				" (" . $cell->{'mode'} . ")";
+			$s{$c} .= sprintf "%-25s",
+			        '"' . $cell->{'ssid'} . '"' . " (" . $cell->{'mode'} . ")";
 		}
 		else {
 			$s{$c} .= sprintf "%-25s", '"' . $cell->{'ssid'} . '"';
 		}
 
 		$s{$c} .= sprintf "%-14s", "Signal: " . $cell->{'qual'};
-		
-		if ($cell->{'enc'} eq 'on'){
+
+		if ($cell->{'enc'} eq 'on') {
 			$s{$c} .= $cell->{'wpa'} ? " Enc: WPA " : " Enc: WEP ";
 		}
 		else {
 			$s{$c} .= " Enc: OPEN";
 		}
-		
+
 		$s{$c} .= ' ' . $cell->{'bssid'};
 	}
 
@@ -379,8 +375,7 @@ sub wifi_scan_form {
 	);
 
 	my $wifi_ssid_list = $wifi_scan_form->add(
-		'wireless_ssid_list',
-		'Listbox',
+		'wireless_ssid_list', 'Listbox',
 		-border     => 1,
 		-bfg        => 'green',
 		-wraparound => 1,
@@ -403,12 +398,12 @@ sub wifi_scan_form {
 		-border  => 1,
 		-bfg     => 'blue',
 		-buttons => [ {
-			-label   => '[  Roam  ]',
-			-onpress => sub {
-				$wcell = '--wpa-roam--';
-				shift->parent->lose_focus();
-			}
-		} ]
+				-label   => '[  Roam  ]',
+				-onpress => sub {
+					$wcell = '--wpa-roam--';
+					shift->parent->lose_focus();
+				}
+			}, ],
 	);
 
 	my $wifi_scan_ignore = $wifi_scan_form->add(
@@ -420,14 +415,13 @@ sub wifi_scan_form {
 		-height  => 4,
 		-border  => 1,
 		-bfg     => 'blue',
-		-buttons => [{
+		-buttons => [ {
 				-label   => '[  Skip  ]',
 				-onpress => sub {
 					$wcell = 'none';
 					shift->parent->lose_focus();
 				}
-			},
-		],
+			}, ],
 	);
 
 	my $wifi_scan_again = $wifi_scan_form->add(
@@ -439,14 +433,13 @@ sub wifi_scan_form {
 		-height  => 4,
 		-border  => 1,
 		-bfg     => 'blue',
-		-buttons => [{
+		-buttons => [ {
 				-label   => '[  Scan  ]',
 				-onpress => sub {
 					$wcell = undef;
 					shift->parent->lose_focus();
 				}
-			},
-		],
+			}, ],
 	);
 
 	my $wifi_scan_cancel = $wifi_scan_form->add(
@@ -458,14 +451,13 @@ sub wifi_scan_form {
 		-height  => 4,
 		-border  => 1,
 		-bfg     => 'blue',
-		-buttons => [{
+		-buttons => [ {
 				-label   => '[  Back  ]',
 				-onpress => sub {
 					$iface = undef;
 					shift->parent->lose_focus();
 				}
-			},
-		],
+			}, ],
 	);
 
 	$wifi_ssid_list->focus();
@@ -511,10 +503,10 @@ sub wifi_conf_form {
 
 	my $nic  = $bend->get_nic_info($iface);
 	my $scan = $bend->get_iwlist_res($wcell);
-	
+
 	my $accept = 0;
 	my %w;
-	
+
 	my $wifi_conf_form = $ceni->add(
 		'wifi_conf_form', 'Window',
 		-title  => "Wireless settings for $iface",
@@ -544,8 +536,9 @@ sub wifi_conf_form {
 		-width      => 20,
 		-height     => 2,
 		-values     => [ 'wireless', 'wpa', ],
-		-labels     => { 'wireless' => 'wireless-tools', 'wpa' => 'wpa_supplicant', },
-		-selected   => 0,
+		-labels =>
+		        { 'wireless' => 'wireless-tools', 'wpa' => 'wpa_supplicant', },
+		-selected => 0,
 	);
 
 	$wifi_conf_form->add(
@@ -584,7 +577,8 @@ sub wifi_conf_form {
 	);
 
 	$w{'enc'} = $wifi_conf_form->add(
-		'enc_list', 'Listbox',
+		'enc_list',
+		'Listbox',
 		-radio      => 1,
 		-wraparound => 1,
 		-ipadleft   => 2,
@@ -596,7 +590,7 @@ sub wifi_conf_form {
 		-selected   => 0,
 		-onchange   => sub {
 			my $this = shift;
-			
+
 			if ($this->get() eq 'None') {
 				for ('psk', 'psk_len', 'stdin', 'clear') {
 					$w{$_}->set_color_bfg('red');
@@ -608,12 +602,12 @@ sub wifi_conf_form {
 					$w{'backend'}->set_selection(1);
 					$w{'backend'}->focusable(0);
 				}
-				
+
 				for ('stdin', 'clear') {
 					$w{$_}->set_color_bfg('blue');
 					$w{$_}->focusable(1);
 				}
-				
+
 				$w{'psk'}->set_color_bfg('green');
 				$w{'psk'}->focusable(1);
 			}
@@ -692,7 +686,8 @@ sub wifi_conf_form {
 	);
 
 	$w{'psk'} = $wifi_conf_form->add(
-		'wireless_psk_input', 'PasswordEntry',
+		'wireless_psk_input',
+		'PasswordEntry',
 		-border       => 1,
 		-showoverflow => 0,
 		-bfg          => 'red',
@@ -712,7 +707,7 @@ sub wifi_conf_form {
 			else {
 				$w{'psk_len'}->set_color_bfg('red');
 			}
-			
+
 			$w{'psk_len'}->text(length $psk);
 		},
 	);
@@ -741,27 +736,27 @@ sub wifi_conf_form {
 		-border    => 1,
 		-bfg       => 'red',
 		-focusable => 0,
-		-buttons   => [{
+		-buttons   => [ {
 				-label   => '[Paste]',
 				-onpress => sub {
 					my $this = shift;
 					my $enc  = $w{'enc'}->get();
-					
+
 					$ceni->leave_curses();
-					
+
 					print 'Enter preshared key: ';
-					
+
 					ReadMode('noecho');
 					chomp(my $psk = ReadLine(0));
 					ReadMode('normal');
-					
+
 					print "\n";
-					
+
 					$ceni->reset_curses();
 
 					$w{'psk'}->text($psk);
 					$w{'psk_len'}->text(length $psk);
-					
+
 					$this->lose_focus();
 
 					if (psk_is_valid($enc, $psk)) {
@@ -772,8 +767,7 @@ sub wifi_conf_form {
 						$w{'psk'}->focus();
 					}
 				}
-			},
-		],
+			}, ],
 	);
 
 	$w{'clear'} = $wifi_conf_form->add(
@@ -786,21 +780,20 @@ sub wifi_conf_form {
 		-border    => 1,
 		-bfg       => 'red',
 		-focusable => 0,
-		-buttons   => [{
+		-buttons   => [ {
 				-label   => '[Clear]',
 				-onpress => sub {
 					my $this = shift;
-					
+
 					$w{'psk_len'}->text('0');
 					$w{'psk_len'}->set_color_bfg('red');
-					
+
 					$this->lose_focus();
-				
+
 					$w{'psk'}->text('');
 					$w{'psk'}->focus();
 				}
-			},
-		],
+			}, ],
 	);
 
 	$w{'confirm'} = $wifi_conf_form->add(
@@ -812,13 +805,13 @@ sub wifi_conf_form {
 		-height  => 4,
 		-border  => 1,
 		-bfg     => 'blue',
-		-buttons => [{
+		-buttons => [ {
 				-label   => '[ Accept ]',
 				-onpress => sub {
-					my $this   = shift;
-					my $enc    = $w{'enc'}->get();
-					my $valid  = 0;
-					
+					my $this  = shift;
+					my $enc   = $w{'enc'}->get();
+					my $valid = 0;
+
 					if ($enc eq 'None') {
 						$valid++;
 					}
@@ -828,23 +821,26 @@ sub wifi_conf_form {
 						}
 						else {
 							if ($enc eq 'WEP') {
-								$ceni->error(" $enc encryption requires a key with at least 5 characters.");
+								$ceni->error(
+									" $enc encryption requires a key with at least 5 characters."
+								);
 							}
 							elsif ($enc eq 'WPA') {
-								$ceni->error(" $enc encryption requires a key with 8 to 63 characters.");
+								$ceni->error(
+									" $enc encryption requires a key with 8 to 63 characters."
+								);
 							}
 							$this->lose_focus();
 							$w{'psk'}->focus();
 						}
 					}
-					
+
 					if ($valid) {
 						$accept++;
 						$this->parent->lose_focus();
 					}
 				}
-			},
-		],
+			}, ],
 	);
 
 	my $wifi_scan = $wifi_conf_form->add(
@@ -856,14 +852,13 @@ sub wifi_conf_form {
 		-height  => 4,
 		-border  => 1,
 		-bfg     => 'blue',
-		-buttons => [{
+		-buttons => [ {
 				-label   => '[  Scan  ]',
 				-onpress => sub {
 					$wcell = undef;
 					shift->parent->lose_focus();
 				}
-			},
-		],
+			}, ],
 	);
 
 	my $wifi_cancel = $wifi_conf_form->add(
@@ -875,23 +870,21 @@ sub wifi_conf_form {
 		-height  => 4,
 		-border  => 1,
 		-bfg     => 'blue',
-		-buttons => [{
+		-buttons => [ {
 				-label   => '[  Cancel  ]',
 				-onpress => sub {
 					$iface = undef;
 					$wcell = undef;
 					shift->parent->lose_focus();
 				}
-			},
-		],
+			}, ],
 	);
 
 	if ($wcell and $wcell ne 'none') {
 		if ($scan->{'ssid'}) {
 			if ($scan->{'ssid'} =~ m/^(any|on|off)$/i) {
-				# escape ssid's which are iwconfig keywords
 				$w{'ssid'}->text('-- ' . $scan->{'ssid'});
-				$w{'ssid'}->focusable(0);;
+				$w{'ssid'}->focusable(0);
 			}
 			elsif ($scan->{'ssid'} !~ /^(<hidden>|\*)$/) {
 				$w{'ssid'}->text($scan->{'ssid'});
@@ -951,7 +944,7 @@ sub wifi_conf_form {
 			$conf{'stanza'}{'wireless-mode'} = $w{'mode'}->get();
 		}
 	}
-	
+
 	if ($w{'backend'}->get() eq 'wireless') {
 		if ($w{'ssid'}->get()) {
 			$conf{'stanza'}{'wireless-essid'} = $w{'ssid'}->get();
@@ -963,7 +956,7 @@ sub wifi_conf_form {
 		if ($w{'psk'}->get()) {
 			my $psk     = $w{'psk'}->get();
 			my $psk_len = length $psk;
-			
+
 			if (is_hex($psk) and $psk_len =~ m/^(10|26|32|58)$/) {
 				$conf{'stanza'}{'wireless-key'} = $psk;
 			}
@@ -995,7 +988,7 @@ sub wifi_conf_form {
 
 		if ($w{'enc'}->get() =~ /^(None|WEP)$/) {
 			$conf{'stanza'}{'wpa-key-mgmt'} = 'NONE';
-			
+
 			if ($w{'enc'}->get() eq 'WEP') {
 				$conf{'stanza'}{'wpa-wep-key0'}      = $w{'psk'}->get();
 				$conf{'stanza'}{'wpa-wep-tx-keyidx'} = '0';
@@ -1024,8 +1017,8 @@ sub netw_conf_form {
 	return 1 if (length($conf{'stanza'}{'wpa-roam'}));
 
 	my @static = (
-		'address', 'netmask', 'network', 'broadcast', 'gateway',
-		'dns-search', 'dns-nameservers',
+		'address', 'netmask',    'network', 'broadcast',
+		'gateway', 'dns-search', 'dns-nameservers',
 	);
 
 	my %s;
@@ -1131,7 +1124,7 @@ sub netw_conf_form {
 		-ipadleft  => 1,
 		-focusable => 0,
 		-regexp    => '/^[0-9\.]*$/',
-		-onchange => sub { $s{'address'}->delete_till_eol(); },
+		-onchange  => sub { $s{'address'}->delete_till_eol(); },
 		-onblur    => sub {
 			if (is_ip($s{'address'}->get())) {
 				if ($s{'address'}->get() =~ m/^(10\.)\d+\.\d+\.\d+$/) {
@@ -1174,7 +1167,7 @@ sub netw_conf_form {
 		-ipadleft  => 1,
 		-focusable => 0,
 		-regexp    => '/^[0-9\.]*$/',
-		-onchange => sub { $s{'network'}->delete_till_eol(); },
+		-onchange  => sub { $s{'network'}->delete_till_eol(); },
 	);
 
 	$network_form->add(
@@ -1198,7 +1191,7 @@ sub netw_conf_form {
 		-ipadleft  => 1,
 		-focusable => 0,
 		-regexp    => '/^[0-9\.]*$/',
-		-onchange => sub { $s{'netmask'}->delete_till_eol(); },
+		-onchange  => sub { $s{'netmask'}->delete_till_eol(); },
 	);
 
 	$network_form->add(
@@ -1222,7 +1215,7 @@ sub netw_conf_form {
 		-ipadleft  => 1,
 		-focusable => 0,
 		-regexp    => '/^[0-9\.]*$/',
-		-onchange => sub { $s{'broadcast'}->delete_till_eol(); },
+		-onchange  => sub { $s{'broadcast'}->delete_till_eol(); },
 	);
 
 	$network_form->add(
@@ -1246,7 +1239,7 @@ sub netw_conf_form {
 		-ipadleft  => 1,
 		-focusable => 0,
 		-regexp    => '/^[0-9\.]*$/',
-		-onchange => sub { $s{'gateway'}->delete_till_eol(); },
+		-onchange  => sub { $s{'gateway'}->delete_till_eol(); },
 	);
 
 	if (-x '/sbin/resolvconf') {
@@ -1305,7 +1298,7 @@ sub netw_conf_form {
 		-height  => 4,
 		-border  => 1,
 		-bfg     => 'blue',
-		-buttons => [{
+		-buttons => [ {
 				-label   => '[ Accept ]',
 				-onpress => sub {
 					my $this = shift;
@@ -1340,8 +1333,7 @@ sub netw_conf_form {
 						$this->parent->lose_focus();
 					}
 				}
-			},
-		],
+			}, ],
 	);
 
 	my $back = $network_form->add(
@@ -1353,7 +1345,7 @@ sub netw_conf_form {
 		-height  => 4,
 		-border  => 1,
 		-bfg     => 'blue',
-		-buttons => [{
+		-buttons => [ {
 				-label   => '[  Back  ]',
 				-onpress => sub {
 					if (not $wcell) {
@@ -1361,8 +1353,7 @@ sub netw_conf_form {
 					}
 					shift->parent->lose_focus();
 				}
-			},
-		],
+			}, ],
 	);
 
 	my $cancel = $network_form->add(
@@ -1374,14 +1365,13 @@ sub netw_conf_form {
 		-height  => 4,
 		-border  => 1,
 		-bfg     => 'blue',
-		-buttons => [{
+		-buttons => [ {
 				-label   => '[  Cancel  ]',
 				-onpress => sub {
 					$iface = undef;
 					shift->parent->lose_focus();
 				}
-			},
-		],
+			}, ],
 	);
 
 	if (not $current->{'method'}) {
@@ -1391,14 +1381,13 @@ sub netw_conf_form {
 		$s{'method'}->set_selection(1);
 	}
 
-	if (not $current->{'class'} and keys %{ $current }) {
+	if (not $current->{'class'} and keys %{$current}) {
 		$s{'class'}->set_selection(2);
 	}
 	elsif ($current->{'class'} eq 'auto') {
 		$s{'class'}->set_selection(1);
 	}
 	else {
-		# allow-hotplug
 		$s{'class'}->set_selection(0);
 	}
 
@@ -1424,7 +1413,7 @@ sub netw_conf_form {
 }
 
 sub ifupdown_iface {
-	unless($conf{'method'}) {
+	unless ($conf{'method'}) {
 		return 0;
 	}
 
@@ -1442,7 +1431,7 @@ sub ifupdown_iface {
 	$ceni->leave_curses();
 
 	restore_stderr();
-	
+
 	$bend->ifup($iface);
 
 	print "\n";
@@ -1460,9 +1449,9 @@ sub ifupdown_iface {
 
 	if ($key =~ /\w|\s/) {
 		redirect_stderr();
-		
+
 		$ceni->reset_curses();
-		
+
 		$iface = undef;
 		return 0;
 	}
@@ -1477,17 +1466,17 @@ sub main () {
 
 	while (1) {
 		%conf = ();
-		
+
 		$bend->parse_eni();
 		$bend->nic_info();
-		
+
 		interface_form() or last;
 		configure_form() or next;
 		wifi_scan_form() or next;
 		wifi_conf_form() or next;
 		netw_conf_form() or next;
 		ifupdown_iface() or next;
-		
+
 		last;
 	}
 

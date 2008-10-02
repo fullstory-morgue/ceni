@@ -11,8 +11,9 @@ ceni (1.42) UNRELEASED; urgency=low
   * Consistent use of parentheses for method calls.
   * Remove commented code for chmoding wpa_supplicant.conf, will not be
     needed.
+  * A bit of gratuitous code cleanup and scrubbing.
 
- -- Kel Modderman <kel@otaku42.de>  Thu, 02 Oct 2008 22:18:53 +1000
+ -- Kel Modderman <kel@otaku42.de>  Thu, 02 Oct 2008 22:57:28 +1000
 
 ceni (1.41) unstable; urgency=low
 
