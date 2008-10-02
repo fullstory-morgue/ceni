@@ -486,9 +486,9 @@ sub wifi_scan_form {
 			open(WS, '>/etc/wpa_supplicant/wpa_supplicant.conf');
 			print WS $wpasupp;
 			close(WS);
-			my ($login, $pass, $uid, $gid) = getpwnam('netdev');
-			chown 0, $gid, '/etc/wpa_supplicant/wpa_supplicant.conf';
-			chmod 0660, '/etc/wpa_supplicant/wpa_supplicant.conf';
+			#my ($login, $pass, $uid, $gid) = getpwnam('netdev');
+			#chown 0, $gid, '/etc/wpa_supplicant/wpa_supplicant.conf';
+			chmod 0600, '/etc/wpa_supplicant/wpa_supplicant.conf';
 		}
 		$bend->rem_iface_conf($iface);
 		$conf{'class'}  = 'allow-hotplug';
