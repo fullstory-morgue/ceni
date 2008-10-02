@@ -1381,8 +1381,10 @@ WIFI:				until ($wcell) {
 						$bend->prep_wpa_roam();
 						$bend->conf_wpa_roam($iface);
 						# We could provide a wpa_roam specific
-						# form here, or at least a large message
-						# about how to use it
+						# form here (and remove conf_wpa_roam()
+						# from the backend), or at least a large
+						# message about how to manage the roaming
+						# daemon
 					}
 					else {
 						wifi_conf_form();
