@@ -7,7 +7,12 @@ ceni (1.42) UNRELEASED; urgency=low
   * Add basic support to enable wpa-roam and edit logical interfaces.
   * DO NOT RELEASE YET
 
- -- Niall Walsh <niallwalsh@users.berlios.de>  Thu, 02 Oct 2008 00:55:36 +0100
+  [ Kel Modderman ]
+  * Consistent use of parentheses for method calls.
+  * Remove commented code for chmoding wpa_supplicant.conf, will not be
+    needed.
+
+ -- Kel Modderman <kel@otaku42.de>  Thu, 02 Oct 2008 22:18:53 +1000
 
 ceni (1.41) unstable; urgency=low
 
