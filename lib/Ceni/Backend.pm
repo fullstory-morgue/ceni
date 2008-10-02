@@ -508,8 +508,8 @@ sub get_iwlist_res {
 
 sub prep_wpa_roam {
 	my $self = shift;
-	my $wpa_roam_ex    = '/usr/share/doc/wpasupplicant/examples/wpa-roam.conf';
-	my $wpa_roam_cf    = '/etc/wpa_supplicant/wpa-roam.conf';
+	my $wpa_roam_ex = '/usr/share/doc/wpasupplicant/examples/wpa-roam.conf';
+	my $wpa_roam_cf = '/etc/wpa_supplicant/wpa-roam.conf';
 
 	if (not -s $wpa_roam_ex) {
 		croak "W: wpa-roam template not found: " . $wpa_roam_ex . "\n";
