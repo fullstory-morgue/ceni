@@ -28,13 +28,11 @@ sub is_wireless {
 	my $retval = 0;
 
 	if (-d "/sys/class/net/$iface/phy80211") {
-		# cfg80211
 		$retval++;
 	}
 	else {
-		# WEXT
 		open my $iwgetid, '-|', "iwgetid --protocol " . $iface
-			or carp "W: could not execute iwgetid --protocol " . $iface . "\n";
+		        or carp "W: could not execute iwgetid --protocol $iface: $!\n";
 		while (<$iwgetid>) {
 			chomp;
 			m/^$iface/ and $retval++;
@@ -60,19 +58,21 @@ sub nic_info {
 		my ($bus, $desc);
 
 		open my $udevinfo, '-|', "$udevinfo_cmd -a -p " . $i{$if}{'sysfs'}
-			or carp "E: could not execute $udevinfo_cmd -a -p " . $i{$if}{'sysfs'} . "\n";
+		        or carp "E: could not execute $udevinfo_cmd -a -p "
+		        . $i{$if}{'sysfs'} . ": $!\n";
 		while (<$udevinfo>) {
 			chomp;
 			$self->debug($_);
 			if (m/^\s+([A-Z]+({(.+)})?)=="([^"]+)"$/) {
-				$3 ? $i{$if}{lc $3} ||= $4 : $i{$if}{lc $1} ||= $4;
+				$3 ? $i{$if}{ lc $3 } ||= $4 : $i{$if}{ lc $1 } ||= $4;
 			}
 		}
 		close $udevinfo;
 
 		if ($i{$if}{'type'} == 1 and $i{$if}{'subsystems'}) {
 			$bus = $i{$if}{'subsystems'};
-			$i{$if}{'connection_type'} = $self->is_wireless($if) ? 'wireless' : 'ethernet';
+			$i{$if}{'connection_type'} =
+			        $self->is_wireless($if) ? 'wireless' : 'ethernet';
 		}
 		else {
 			delete $i{$if};
@@ -81,16 +81,16 @@ sub nic_info {
 
 		if ($bus eq 'pci' or $bus eq 'ssb') {
 			my ($vendor, $device) = @{ $i{$if} }{ 'vendor', 'device' };
-			
+
 			$desc = `lspci -d $vendor:$device 2>/dev/null`;
 			$desc ||= "PCI device $vendor:$device";
-			
+
 			chomp($desc);
 			$desc =~ s/^.+:\s+//;
 		}
 		elsif ($bus eq 'usb') {
 			my ($manu, $prod) = @{ $i{$if} }{ 'manufacturer', 'product' };
-			
+
 			if ($manu =~ m/^linux/i or $prod =~ m/^$manu/i) {
 				$desc = $prod;
 			}
@@ -108,6 +108,7 @@ sub nic_info {
 				$desc = "$prod1 $prod2";
 			}
 		}
+
 		# FireWire IEEE 1394 Ethernet <- who cares?
 
 		if ($desc) {
@@ -231,7 +232,7 @@ sub set_iface_conf {
 	$self->{'file'} ||= '/etc/network/interfaces';
 
 	tie(my @eni, 'Tie::File', $self->{'file'})
-		or carp "E: failed to open " . $self->{'file'};
+	        or carp "E: failed to open " . $self->{'file'} . ": $!\n";
 
 	my @block;
 
@@ -329,7 +330,8 @@ sub set_iface_conf {
 
 	if (-w $self->{'file'}) {
 		chmod 0640, $self->{'file'}
-			or carp "E: failed to chmod 0640 ". $self->{'file'};
+		        or carp "E: failed to chmod 0640 " . $self->{'file'}
+			. ": $!\n";
 	}
 }
 
@@ -412,7 +414,8 @@ sub iwlist_scan {
 
 	sleep 1;
 
-	open my $fh, '-|', "/sbin/iwlist $iface scan" or carp "E: iwlist $iface scan failed";
+	open my $fh, '-|', "/sbin/iwlist $iface scan"
+	        or carp "E: iwlist $iface scan failed: $!\n";
 	my @s = <$fh>;
 	chomp @s;
 	close $fh;
@@ -469,7 +472,7 @@ sub iwlist_scan {
 	$self->debug(\%w, 'w');
 
 	%{ $self->{'_data'}->{'iwlist'} } = %w;
-	
+
 	return 1;
 }
 
