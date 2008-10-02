@@ -1380,6 +1380,9 @@ WIFI:				until ($wcell) {
 					if ($wcell eq 'wpa_roam') {
 						$bend->prep_wpa_roam();
 						$bend->conf_wpa_roam($iface);
+						# We could provide a wpa_roam specific
+						# form here, or at least a large message
+						# about how to use it
 					}
 					else {
 						wifi_conf_form();
@@ -1391,7 +1394,6 @@ WIFI:				until ($wcell) {
 						write_eni_conf();
 					}
 					ifupdown_iface();
-					if (not $iface) { next MAIN; }
 				}
 			}
 			else {
@@ -1399,16 +1401,18 @@ WIFI:				until ($wcell) {
 				if (not $iface) { next MAIN; }
 				write_eni_conf();
 				ifupdown_iface();
-				if (not $iface) { next MAIN; }
 			}
 		}
 		else {
 			netw_conf_form();
 			if (not $iface) { next MAIN; }
 			write_eni_conf();
+			# We need to prompt for configuration of another network
+			# using curses yes/no widget here
 		}
 
-		last;
+		if ($iface)
+			last;
 	}
 
 	$ceni->leave_curses();
