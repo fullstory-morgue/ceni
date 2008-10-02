@@ -1397,6 +1397,7 @@ WIFI:				until ($wcell) {
 				}
 			}
 			else {
+				# Non-Wireless Interface
 				netw_conf_form();
 				if (not $iface) { next MAIN; }
 				write_eni_conf();
@@ -1404,6 +1405,8 @@ WIFI:				until ($wcell) {
 			}
 		}
 		else {
+			# Logical Interface
+			# Need to disable the 'class' propery in netw_conf_form()
 			netw_conf_form();
 			if (not $iface) { next MAIN; }
 			write_eni_conf();
