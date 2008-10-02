@@ -23,7 +23,7 @@ sub new {
 	return $self;
 }
 
-sub is_wireless {
+sub is_iface_wireless {
 	my ($self, $iface) = (shift, shift);
 	my $retval = 0;
 
@@ -72,7 +72,7 @@ sub nic_info {
 		if ($i{$if}{'type'} == 1 and $i{$if}{'subsystems'}) {
 			$bus = $i{$if}{'subsystems'};
 			$i{$if}{'connection_type'} =
-			        $self->is_wireless($if) ? 'wireless' : 'ethernet';
+			        $self->is_iface_wireless($if) ? 'wireless' : 'ethernet';
 		}
 		else {
 			delete $i{$if};
@@ -127,7 +127,7 @@ sub nic_info {
 	return 1;
 }
 
-sub get_nic_info {
+sub get_iface_info {
 	my ($self, $iface) = (shift, shift);
 
 	if ($iface and $self->{'_data'}->{'nicinfo'}->{$iface}) {
@@ -140,7 +140,7 @@ sub get_nic_info {
 	return undef;
 }
 
-sub is_nic_valid {
+sub is_iface_valid {
 	my ($self, $iface) = (shift, shift);
 
 	if ($iface and $self->{'_data'}->{'nicinfo'}->{$iface}) {
@@ -224,6 +224,17 @@ sub get_iface_conf {
 	}
 
 	return undef;
+}
+
+sub is_iface_configured {
+	my ($self, $iface) = (shift, shift);
+
+	if ($self->get_iface_conf($iface) and
+	    $self->get_iface_conf($iface)->{'method'}) {
+		return 1;
+	}
+
+	return 0;
 }
 
 sub set_iface_conf {
@@ -343,15 +354,19 @@ sub rem_iface_conf {
 
 sub ifupdown {
 	my ($self, $iface, $action) = (shift, shift, shift);
-	my $ret;
+	my @cmd = ("/sbin/if" . $action, $iface, "-i", $self->{'file'}, "-v");
+
+	if (not $self->{'act'}) {
+		push @cmd, "-n";
+	}
+
+	if ($action eq 'down') {
+		push @cmd, "--force";
+	}
 
 	if ($self->{'_data'}->{'eni'}->{$iface}->{'method'}) {
-		if ($self->{'act'}) {
-			$ret = system($action, "-v", $iface, "-i", $self->{'file'});
-		}
-		else {
-			$ret = system($action, "-v", $iface, "-i", $self->{'file'}, "-n");
-		}
+		$self->debug(\@cmd, 'cmd');
+		my $ret = system(@cmd);
 
 		if ($ret != 0) {
 			if (($? & 127) == 2) {
@@ -362,10 +377,7 @@ sub ifupdown {
 			}
 		}
 		else {
-			if ($action =~ m/if(up|down)$/) {
-				$self->{'_data'}->{'ifupdown'}->{$iface} = $1;
-			}
-			return 1;
+			$self->{'_data'}->{'ifupdown'}->{$iface} = $action;
 		}
 	}
 	else {
@@ -373,20 +385,18 @@ sub ifupdown {
 	}
 
 	sleep 1;
-
-	return 0;
 }
 
 sub ifup {
 	my ($self, $iface) = (shift, shift);
 
-	return $self->ifupdown($iface, '/sbin/ifup');
+	return $self->ifupdown($iface, 'up');
 }
 
 sub ifdown {
 	my ($self, $iface) = (shift, shift);
 
-	return $self->ifupdown($iface, '/sbin/ifdown');
+	return $self->ifupdown($iface, 'down');
 }
 
 sub ifstate {
@@ -401,8 +411,15 @@ sub ifstate {
 
 sub iwlist_scan {
 	my ($self, $iface) = (shift, shift);
+	my $ret;
 
-	my $ret = system("/sbin/ifconfig $iface up 2>/dev/null");
+	if (-x '/bin/ip') {
+		$ret = system("/bin/ip link set $iface up 2>/dev/null");
+	}
+	else {
+		$ret = system("/sbin/ifconfig $iface up 2>/dev/null");
+	}
+
 	if ($ret != 0) {
 		if (($? & 127) == 2) {
 			carp "W: ifconfig $iface up interupted";
@@ -487,6 +504,54 @@ sub get_iwlist_res {
 	}
 
 	return undef;
+}
+
+sub prep_wpa_roam {
+	my $self = shift;
+	my $wpa_roam_ex    = '/usr/share/doc/wpasupplicant/examples/wpa-roam.conf';
+	my $wpa_roam_cf    = '/etc/wpa_supplicant/wpa-roam.conf';
+
+	if (not -s $wpa_roam_ex) {
+		croak "W: wpa-roam template not found: " . $wpa_roam_ex . "\n";
+	}
+
+	if (not -s $wpa_roam_cf) {
+		tie(my @wpa, 'Tie::File', $wpa_roam_cf)
+			or croak "E: failed to open " . $wpa_roam_cf . ": $!\n";
+
+		open my $example, '<', $wpa_roam_ex
+			or croak "E: failed to open " . $wpa_roam_ex . ": $!\n";
+		while (<$example>) {
+			chomp;
+			s/^#\s*update_config=.*/update_config=1/;
+			m/^#/ and next;
+			m/./ or next;
+			push @wpa, $_;
+		}
+		close $example;
+
+		chmod 0600, $wpa_roam_cf;
+	}
+}
+
+sub conf_wpa_roam {
+	my ($self, $iface) = (shift, shift);
+
+	$self->set_iface_conf(
+		$iface, {
+			'class'  => 'allow-hotplug',
+			'method' => 'manual',
+			'stanza' => {
+				'wpa-roam' => '/etc/wpa_supplicant/wpa-roam.conf',
+			},
+		}
+	);
+
+	if (not $self->get_iface_conf('default')) {
+		$self->set_iface_conf('default', { 'method' => 'dhcp', }, );
+	}
+
+	$self->parse_eni();
 }
 
 sub debug {

@@ -40,7 +40,7 @@ my $bend = new Ceni::Backend({ debug => $dbg, });
 $bend->nic_info;
 
 if ($iface) {
-	if ($bend->is_nic_valid($iface)) {
+	if ($bend->is_iface_valid($iface)) {
 		@i = ($iface);
 	}
 	else {
@@ -49,11 +49,11 @@ if ($iface) {
 	}
 }
 else {
-	@i = sort keys %{ $bend->get_nic_info };
+	@i = sort keys %{ $bend->get_iface_info };
 }
 
 for my $if (@i) {
-	my $nic = $bend->get_nic_info($if);
+	my $nic = $bend->get_iface_info($if);
 
 	if ($wifi) {
 		$nic->{'connection_type'} eq 'wireless' or next;
