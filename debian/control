@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Kel Modderman <kel@otaku42.de>
 Uploaders: Stefan Lippers-Hollmann <s.l-h@gmx.de>
-Build-Depends: debhelper (>= 6)
+Build-Depends: debhelper (>= 7)
 Build-Depends-Indep: perl (>= 5.6.0-16)
 Vcs-Svn: svn://svn.berlios.de/fullstory/ceni/trunk
 Vcs-Browser: http://svn.berlios.de/wsvn/fullstory/ceni/trunk/

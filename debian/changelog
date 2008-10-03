@@ -19,8 +19,10 @@ ceni (1.42) UNRELEASED; urgency=low
   * Tweak wifi_scan_form.
   * Use regular expression input filter when adding new logical
     interfaces.
+  * Use dh from debhelper >= 7, reduce debian/rules.
+  * Add icons/Makefile to replace create-icons debian/rules target.
 
- -- Kel Modderman <kel@otaku42.de>  Sat, 04 Oct 2008 02:33:07 +1000
+ -- Kel Modderman <kel@otaku42.de>  Sat, 04 Oct 2008 03:10:18 +1000
 
 ceni (1.41) unstable; urgency=low
 
