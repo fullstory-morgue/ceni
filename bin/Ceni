@@ -5,11 +5,11 @@ use warnings;
 
 use FindBin;
 
-if ($> != 0) {
-	print "Ceni requires root priviledges! Be careful!\n";
-	exec('su', 'root', '-c', "$FindBin::Bin/$FindBin::Script @ARGV");
-	exit 1;
-}
+#if ($> != 0) {
+#	print "Ceni requires root priviledges! Be careful!\n";
+#	exec('su', 'root', '-c', "$FindBin::Bin/$FindBin::Script @ARGV");
+#	exit 1;
+#}
 
 use lib "$FindBin::RealBin/../lib";
 use Ceni::Backend;
@@ -1365,6 +1365,9 @@ MAIN:	while (1) {
 		}
 
 		if ($bend->is_iface_configured($iface)) {
+			# Need to be careful when taking down logical interfaces
+			# and interfaces managed by wpa_action, currently the
+			# --force option is used to ensure interface is down
 			configure_form();
 			if (not $iface) { next MAIN; }
 		}
