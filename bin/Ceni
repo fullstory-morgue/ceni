@@ -133,24 +133,24 @@ sub psk_is_valid {
 }
 
 sub interface_form {
-	my @i = sort keys %{ $bend->get_iface_info() };
-	my @v = sort keys %{ $bend->get_iface_conf() };
-	my %i;
+	my (@i, %i, @l, %l);
 
-	for my $if (@i) {
+	for my $if (sort keys %{ $bend->get_iface_info() }) {
 		my $info = $bend->get_iface_info($if);
-
-		$i{$if} = sprintf "%-6s", $if;
-
+		$i{$if}  = sprintf "%-6s", $if;
 		for ('connection_type', 'address', 'drivers', 'desc') {
 			$i{$if} .= " " . $info->{$_};
 		}
+		push(@i, $if);
 	}
 
-	for my $if (@v) {
+	@l = ('new');
+	$l{'new'} = 'Add new logical interface ...';
+
+	for my $if (sort keys %{ $bend->get_iface_conf() }) {
 		if (not $bend->is_iface_valid($if) and $if ne 'lo') {
-			push(@i, $if);
-			$i{$if} = sprintf "%-12s Logical Interface / Network", $if;
+			$l{$if} = $if;
+			push(@l, $if);
 		}
 	}
 
@@ -167,7 +167,7 @@ sub interface_form {
 		-text      => 'Choose a network interface to configure:',
 		-border    => 0,
 		-x         => 3,
-		-y         => 2,
+		-y         => 1,
 		-width     => 50,
 		-focusable => 0,
 		-readonly  => 1,
@@ -175,18 +175,45 @@ sub interface_form {
 
 	my $interface_list = $interface_form->add(
 		'interface_list', 'Listbox',
+		-title      => 'Hardware interfaces.',
 		-border     => 1,
 		-bfg        => 'green',
 		-wraparound => 1,
 		-x          => 1,
-		-y          => 4,
+		-y          => 3,
 		-width      => 76,
-		-height     => 13,
+		-height     => 7,
 		-values     => \@i,
 		-labels     => \%i,
 		-onchange   => sub {
 			my $this = shift;
 			$iface = $this->get();
+			$this->parent->loose_focus();
+		},
+	);
+
+	my $logical_list = $interface_form->add(
+		'logical_list', 'Listbox',
+		-title      => 'Logical interfaces.',
+		-border     => 1,
+		-bfg        => 'green',
+		-wraparound => 1,
+		-x          => 1,
+		-y          => 10,
+		-width      => 76,
+		-height     => 7,
+		-values     => \@l,
+		-labels     => \%l,
+		-onchange   => sub {
+			my $this = shift;
+
+			if ($this->get() eq $l[0]) {
+				$iface = $ceni->question("Name for new logical interface:");
+			}
+			else {
+				$iface = $this->get();
+			}
+
 			$this->parent->loose_focus();
 		},
 	);
@@ -283,14 +310,15 @@ sub wifi_scan {
 }
 
 sub wifi_scan_form {
-	my @s = sort { $a <=> $b } keys %{ $bend->get_iwlist_res() };
-	my %s;
+	my (@s, %s);
 
-	$bend->debug(\@s, 's');
-	for my $c (@s) {
+	@s = ('wpa_roam');
+	$s{'wpa_roam'} = 'Setup wireless roaming with wpa_supplicant ...';
+
+	for my $c (sort { $a <=> $b } keys %{ $bend->get_iwlist_res() }) {
 		my $cell = $bend->get_iwlist_res($c);
 
-		$s{$c} = " $c  ";
+		$s{$c} = "$c  ";
 
 		if ($cell->{'mode'} ne 'master') {
 			$s{$c} .= sprintf "%-25s",
@@ -310,10 +338,9 @@ sub wifi_scan_form {
 		}
 
 		$s{$c} .= ' ' . $cell->{'bssid'};
-	}
 
-	@s = ('wpa_roam', @s);
-	$s{'wpa_roam'} = ' Roam with wpa_supplicant (wpa_gui, wpa_cli) ...';
+		push(@s, $c);
+	}
 
 	my $wifi_scan_form = $ceni->add(
 		'wireless_scan_form', 'Window',
@@ -347,6 +374,12 @@ sub wifi_scan_form {
 		-labels     => \%s,
 		-onchange   => sub {
 			my $this = shift;
+
+			if ($this->get() eq $s[0]) {
+				$bend->prep_wpa_roam();
+				$bend->conf_wpa_roam($iface);
+			}
+
 			$wcell = $this->get();
 			$this->parent->lose_focus();
 		},
@@ -1392,13 +1425,12 @@ WIFI:				until ($wcell) {
 					if (not $iface) { next MAIN; }
 					if (not $wcell) { next WIFI; }
 					if ($wcell eq 'wpa_roam') {
-						$bend->prep_wpa_roam();
-						$bend->conf_wpa_roam($iface);
 						# We could provide a wpa_roam specific
 						# form here (and remove conf_wpa_roam()
 						# from the backend), or at least a large
 						# message about how to manage the roaming
 						# daemon
+						;
 					}
 					else {
 						wifi_conf_form();

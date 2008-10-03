@@ -365,7 +365,6 @@ sub ifupdown {
 	}
 
 	if ($self->{'_data'}->{'eni'}->{$iface}->{'method'}) {
-		$self->debug(\@cmd, 'cmd');
 		my $ret = system(@cmd);
 
 		if ($ret != 0) {
