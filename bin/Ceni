@@ -1416,8 +1416,9 @@ WIFI:				until ($wcell) {
 			# using curses yes/no widget here
 		}
 
-		if ($iface)
+		if ($iface) {
 			last;
+		}
 	}
 
 	$ceni->leave_curses();
