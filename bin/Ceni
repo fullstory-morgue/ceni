@@ -1430,7 +1430,11 @@ WIFI:				until ($wcell) {
 						# form here (and remove conf_wpa_roam()
 						# from the backend), or at least a large
 						# message about how to manage the roaming
-						# daemon
+						# daemon.
+						# Such a form could allow for configuration
+						# of supplicant verbosity or other wpa-*
+						# options applicable to roaming mode such
+						# as driver selection.
 						;
 					}
 					else {
