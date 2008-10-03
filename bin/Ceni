@@ -260,9 +260,11 @@ sub configure_form {
 	$ceni->delete('configure_form');
 
 	if ($configure_list->get() =~ /^(re|de)configure$/) {
-		$ceni->status("Removing ifupdown settings for $iface...");
-		$bend->ifdown($iface);
-		$ceni->nostatus();
+		if ($bend->is_iface_valid($iface)) {
+			$ceni->status("Removing ifupdown settings for $iface...");
+			$bend->ifdown($iface);
+			$ceni->nostatus();
+		}
 
 		if ($configure_list->get() eq 'deconfigure') {
 			$bend->rem_iface_conf($iface);
@@ -1371,9 +1373,6 @@ MAIN:	while (1) {
 		}
 
 		if ($bend->is_iface_configured($iface)) {
-			# Need to be careful when taking down logical interfaces
-			# and interfaces managed by wpa_action, currently the
-			# --force option is used to ensure interface is down
 			configure_form();
 			if (not $iface) { next MAIN; }
 		}
