@@ -17,8 +17,10 @@ ceni (1.42) UNRELEASED; urgency=low
   * Provide dialog for more polished exit confirmation.
   * Separate lists for Hardware and Logical interfaces.
   * Tweak wifi_scan_form.
+  * Use regular expression input filter when adding new logical
+    interfaces.
 
- -- Kel Modderman <kel@otaku42.de>  Sat, 04 Oct 2008 02:23:38 +1000
+ -- Kel Modderman <kel@otaku42.de>  Sat, 04 Oct 2008 02:33:07 +1000
 
 ceni (1.41) unstable; urgency=low
 

@@ -209,6 +209,11 @@ sub interface_form {
 
 			if ($this->get() eq $l[0]) {
 				$iface = $ceni->question("Name for new logical interface:");
+				$iface =~ s/\s+$//;
+				if ($iface !~ m/^[-_\w\d]+$/) {
+					$ceni->error("Invalid logical interface name: $iface");
+					$iface = undef;
+				}
 			}
 			else {
 				$iface = $this->get();
@@ -1403,10 +1408,6 @@ MAIN:	while (1) {
 		$bend->nic_info();
 
 		if (not $iface) {
-			# Need to supply option to create new logical
-			# interfaces. This should be done via an input box
-			# asking for new logical name with an input filter
-			# similar to ip adress input box of network_form
 			interface_form();
 			if (not $iface) { next MAIN; }
 		}
