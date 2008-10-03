@@ -1434,7 +1434,7 @@ WIFI:				until ($wcell) {
 						# Such a form could allow for configuration
 						# of supplicant verbosity or other wpa-*
 						# options applicable to roaming mode such
-						# as driver selection.
+						# as driver selection. ('class' too)
 						;
 					}
 					else {
