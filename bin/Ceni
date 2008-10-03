@@ -45,7 +45,7 @@ my $ceni = new Curses::UI(
 $ceni->set_binding(sub { exit 1; }, "\cC", "\cQ");
 
 if (not -r $eni) {
-	$ceni->error("WARNING! $eni cannot be read!\n");
+	$ceni->error("ERROR! $eni cannot be read!\n");
 	exit 1;
 }
 
@@ -1360,6 +1360,8 @@ MAIN:	while (1) {
 		$bend->nic_info();
 
 		if (not $iface) {
+			# Need to supply option to create new logical
+			# interfaces
 			interface_form();
 			if (not $iface) { next MAIN; }
 		}
