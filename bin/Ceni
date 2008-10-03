@@ -1367,7 +1367,9 @@ MAIN:	while (1) {
 
 		if (not $iface) {
 			# Need to supply option to create new logical
-			# interfaces
+			# interfaces. This should be done via an input box
+			# asking for new logical name with an input filter
+			# similar to ip adress input box of network_form
 			interface_form();
 			if (not $iface) { next MAIN; }
 		}
