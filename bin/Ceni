@@ -1329,29 +1329,33 @@ sub write_eni_conf {
 
 sub ifupdown_iface {
 	$ceni->leave_curses();
-
 	restore_stderr();
 
 	$bend->ifup($iface);
 
 	print "\n";
-	print '#', '#' x 59, "\n";
-	print "  Press any key and then Enter to continue (re)configuring\n";
-	print "  network interfaces.\n";
-	print "\n";
-	print "  Otherwise press the Enter key to exit now.\n";
-	print '#', '#' x 59, "\n";
+	print '#' x 33, "\n";
+	print "#  Press Enter key to continue  #\n";
+	print '#' x 33, "\n";
 	print "\n";
 
 	ReadMode('noecho');
-	chomp(my $key = ReadLine(0));
+	ReadLine(0);
 	ReadMode('normal');
 
-	if ($key =~ /\w|\s/) {
-		redirect_stderr();
-		$ceni->reset_curses();
-		$iface = undef;
-	}
+	redirect_stderr();
+	$ceni->reset_curses();
+}
+
+sub qanother_iface {
+	my $exit = $ceni->dialog(
+			-message => "Select 'yes' to exit or 'no' to continue.",
+			-title   => "Do you want to exit?",
+			-buttons => ['yes', 'no'],
+
+	);
+
+	$exit or $iface = undef;
 }
 
 #===============================================#
@@ -1421,13 +1425,11 @@ WIFI:				until ($wcell) {
 			netw_conf_form();
 			if (not $iface) { next MAIN; }
 			write_eni_conf();
-			# We need to prompt for configuration of another network
-			# using curses yes/no widget here
 		}
 
-		if ($iface) {
-			last;
-		}
+		qanother_iface();
+		if (not $iface) { next MAIN; }
+		else            { last MAIN; }
 	}
 
 	$ceni->leave_curses();

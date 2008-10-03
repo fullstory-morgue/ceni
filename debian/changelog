@@ -14,8 +14,9 @@ ceni (1.42) UNRELEASED; urgency=low
   * Work a bit on the initial support for wpa-roam and logical interfaces.
   * Do not allow class property to be set for logical interfaces
   * Only ifdown/ifup hardware network interfaces.
+  * Provide dialog for more polished exit confirmation.
 
- -- Kel Modderman <kel@otaku42.de>  Fri, 03 Oct 2008 23:46:00 +1000
+ -- Kel Modderman <kel@otaku42.de>  Sat, 04 Oct 2008 01:44:41 +1000
 
 ceni (1.41) unstable; urgency=low
 
