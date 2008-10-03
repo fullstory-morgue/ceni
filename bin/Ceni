@@ -975,29 +975,31 @@ sub netw_conf_form {
 		},
 	);
 
-	$network_form->add(
-		'class_title', 'TextEntry',
-		-text      => 'Class:',
-		-border    => 0,
-		-x         => 40,
-		-y         => 1,
-		-width     => 12,
-		-focusable => 0,
-		-readonly  => 1,
-	);
+	if ($bend->is_iface_valid($iface)) {
+		$network_form->add(
+			'class_title', 'TextEntry',
+			-text      => 'Class:',
+			-border    => 0,
+			-x         => 40,
+			-y         => 1,
+			-width     => 12,
+			-focusable => 0,
+			-readonly  => 1,
+		);
 
-	$n{'class'} = $network_form->add(
-		'class_list', 'Listbox',
-		-radio      => 1,
-		-wraparound => 1,
-		-ipadleft   => 2,
-		-x          => 55,
-		-y          => 1,
-		-width      => 20,
-		-height     => 3,
-		-values     => [ 'allow-hotplug', 'auto', 'manual', ],
-		-selected   => 0,
-	);
+		$n{'class'} = $network_form->add(
+			'class_list', 'Listbox',
+			-radio      => 1,
+			-wraparound => 1,
+			-ipadleft   => 2,
+			-x          => 55,
+			-y          => 1,
+			-width      => 20,
+			-height     => 3,
+			-values     => [ 'allow-hotplug', 'auto', 'manual', ],
+			-selected   => 0,
+		);
+	}
 
 	$network_form->add(
 		'address_title', 'TextEntry',
@@ -1280,14 +1282,16 @@ sub netw_conf_form {
 		$n{'method'}->set_selection(1);
 	}
 
-	if (not $current->{'class'} and keys %{$current}) {
-		$n{'class'}->set_selection(2);
-	}
-	elsif ($current->{'class'} eq 'auto') {
-		$n{'class'}->set_selection(1);
-	}
-	else {
-		$n{'class'}->set_selection(0);
+	if ($bend->is_iface_valid($iface)) {
+		if (not $current->{'class'} and keys %{$current}) {
+			$n{'class'}->set_selection(2);
+		}
+		elsif ($current->{'class'} eq 'auto') {
+			$n{'class'}->set_selection(1);
+		}
+		else {
+			$n{'class'}->set_selection(0);
+		}
 	}
 
 	$n{'method'}->focus();
@@ -1296,7 +1300,7 @@ sub netw_conf_form {
 	$ceni->delete('network_form');
 
 	for ('class', 'method') {
-		if ($n{$_}->get()) {
+		if ($n{$_} and $n{$_}->get()) {
 			$conf{$_} = $n{$_}->get();
 		}
 	}
@@ -1413,7 +1417,6 @@ WIFI:				until ($wcell) {
 		}
 		else {
 			# Logical Interface
-			# Need to disable the 'class' propery in netw_conf_form()
 			netw_conf_form();
 			if (not $iface) { next MAIN; }
 			write_eni_conf();

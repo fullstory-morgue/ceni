@@ -12,8 +12,9 @@ ceni (1.42) UNRELEASED; urgency=low
   * A bit of gratuitous code cleanup and scrubbing.
   * Overhaul main loop flow.
   * Work a bit on the initial support for wpa-roam and logical interfaces.
+  * Do not allow class property to be set for logical interfaces
 
- -- Kel Modderman <kel@otaku42.de>  Fri, 03 Oct 2008 07:17:52 +1000
+ -- Kel Modderman <kel@otaku42.de>  Fri, 03 Oct 2008 23:41:46 +1000
 
 ceni (1.41) unstable; urgency=low
 
