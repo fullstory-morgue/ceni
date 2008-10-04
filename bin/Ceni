@@ -210,7 +210,7 @@ sub interface_form {
 			if ($this->get() eq $l[0]) {
 				$iface = $ceni->question("Name for new logical interface:");
 				$iface =~ s/\s+$//;
-				if ($iface !~ m/^[-_\w\d]+$/) {
+				if ($iface and $iface !~ m/^[-_\w\d]+$/) {
 					$ceni->error("Invalid logical interface name: $iface");
 					$iface = undef;
 				}
