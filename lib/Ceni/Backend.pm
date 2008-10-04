@@ -514,7 +514,7 @@ sub prep_wpa_roam {
 		croak "W: wpa-roam template not found: " . $wpa_roam_ex . "\n";
 	}
 
-	if (not -s $wpa_roam_cf) {
+	if ($self->{'act'} and not -s $wpa_roam_cf) {
 		tie(my @wpa, 'Tie::File', $wpa_roam_cf)
 			or croak "E: failed to open " . $wpa_roam_cf . ": $!\n";
 
