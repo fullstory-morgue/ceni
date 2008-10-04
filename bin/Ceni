@@ -141,7 +141,7 @@ sub interface_form {
 		for ('connection_type', 'address', 'drivers', 'desc') {
 			$i{$if} .= " " . $info->{$_};
 		}
-		push(@i, $if);
+		push @i, $if;
 	}
 
 	@l = ('new');
@@ -150,7 +150,7 @@ sub interface_form {
 	for my $if (sort keys %{ $bend->get_iface_conf() }) {
 		if (not $bend->is_iface_valid($if) and $if ne 'lo') {
 			$l{$if} = $if;
-			push(@l, $if);
+			push @l, $if;
 		}
 	}
 
@@ -344,7 +344,7 @@ sub wifi_scan_form {
 
 		$s{$c} .= ' ' . $cell->{'bssid'};
 
-		push(@s, $c);
+		push @s, $c;
 	}
 
 	my $wifi_scan_form = $ceni->add(
