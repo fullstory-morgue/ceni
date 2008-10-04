@@ -5,7 +5,7 @@ use warnings;
 
 use FindBin;
 
-if ($> != 0) {
+if (not (@ARGV and "@ARGV" =~ m/--no-act/) and $> != 0) {
 	print "Ceni requires root priviledges! Be careful!\n";
 	exec('su', 'root', '-c', "$FindBin::Bin/$FindBin::Script @ARGV");
 	exit 1;
