@@ -542,10 +542,11 @@ sub wpas_conf_form {
 	my $wpas_blurb = $wpas_conf_form->add(
 		'wpas_blurb',
 		'TextEntry',
-		-text     => '[Insert text here which describes how wpa-roam works]',
-		-x        => 2,
-		-y        => 10,
-		-width    => 74,
+		-text      => '[Insert text here which describes how wpa-roam works]',
+		-x         => 2,
+		-y         => 10,
+		-width     => 74,
+		-focusable => 0,
 	);
 
 	my $wpas_accept = $wpas_conf_form->add(
