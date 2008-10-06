@@ -32,7 +32,7 @@ sub is_iface_wireless {
 	}
 	else {
 		open my $iwgetid, '-|', "iwgetid --protocol " . $iface
-		        or carp "W: could not execute iwgetid --protocol $iface: $!\n";
+		        or carp "W: could not execute iwgetid --protocol $iface: $!";
 		while (<$iwgetid>) {
 			chomp;
 			m/^$iface/ and $retval++;
@@ -59,7 +59,7 @@ sub nic_info {
 
 		open my $udevinfo, '-|', "$udevinfo_cmd -a -p " . $i{$if}{'sysfs'}
 		        or carp "E: could not execute $udevinfo_cmd -a -p "
-		        . $i{$if}{'sysfs'} . ": $!\n";
+		        . $i{$if}{'sysfs'} . ": $!";
 		while (<$udevinfo>) {
 			chomp;
 			$self->debug($_);
@@ -156,7 +156,7 @@ sub parse_eni {
 	$self->{'file'} ||= '/etc/network/interfaces';
 
 	tie(my @eni, 'Tie::File', $self->{'file'}, mode => O_RDONLY)
-	        or croak "E: failed to open " . $self->{'file'};
+	        or croak "E: failed to open " . $self->{'file'} . ": $!";
 
 	my %e;
 	my $l = 0;
@@ -243,7 +243,7 @@ sub set_iface_conf {
 	$self->{'file'} ||= '/etc/network/interfaces';
 
 	tie(my @eni, 'Tie::File', $self->{'file'})
-	        or carp "E: failed to open " . $self->{'file'} . ": $!\n";
+	        or carp "E: failed to open " . $self->{'file'} . ": $!";
 
 	my @block;
 
@@ -339,11 +339,8 @@ sub set_iface_conf {
 		push @eni, @block;
 	}
 
-	if (-w $self->{'file'}) {
-		chmod 0640, $self->{'file'}
-		        or carp "E: failed to chmod 0640 " . $self->{'file'}
-			. ": $!\n";
-	}
+	chmod 0640, $self->{'file'}
+	        or carp "E: failed to chmod " . $self->{'file'} . ": $!";
 }
 
 sub rem_iface_conf {
@@ -354,36 +351,35 @@ sub rem_iface_conf {
 
 sub ifupdown {
 	my ($self, $iface, $action) = (shift, shift, shift);
-	my @cmd = ("/sbin/if" . $action, $iface, "-i", $self->{'file'}, "-v");
-
-	if (not $self->{'act'}) {
-		push @cmd, "-n";
+	my ($ret, @cmd);
+	
+	if ($action eq 'down' and $self->wpa_action($iface, 'check') == 0) {
+		$ret = $self->{'act'} ? $self->wpa_action($iface, 'down') : 0;
 	}
-
-	if ($action eq 'down') {
-		push @cmd, "--force";
-	}
-
-	if ($self->{'_data'}->{'eni'}->{$iface}->{'method'}) {
-		my $ret = system(@cmd);
-
-		if ($ret != 0) {
-			if (($? & 127) == 2) {
-				carp "W: $action $iface interupted";
-			}
-			else {
-				carp "W: $action $iface failed due to error";
-			}
-		}
-		else {
-			$self->{'_data'}->{'ifupdown'}->{$iface} = $action;
-		}
+	elsif ($self->{'_data'}->{'eni'}->{$iface}->{'method'}) {
+		@cmd = ("/sbin/if" . $action, $iface, "-i", $self->{'file'}, "-v");
+		$self->{'act'} or push @cmd, "-n";
+		$ret = system(@cmd);
 	}
 	else {
 		carp "$iface has no ifupdown method";
 	}
 
+	if ($ret != 0) {
+		if (($? & 127) == 2) {
+			carp "W: $action $iface interupted";
+		}
+		else {
+			carp "W: $action $iface failed due to error";
+		}
+	}
+	else {
+		$self->{'_data'}->{'ifupdown'}->{$iface} = $action;
+	}
+
 	sleep 1;
+
+	return $ret;
 }
 
 sub ifup {
@@ -410,28 +406,30 @@ sub ifstate {
 
 sub iwlist_scan {
 	my ($self, $iface) = (shift, shift);
-	my $ret;
+	my ($ret, $cmd);
 
 	if (-x '/bin/ip') {
-		$ret = system("/bin/ip link set $iface up 2>/dev/null");
+		$cmd = "/bin/ip link set $iface up";
 	}
 	else {
-		$ret = system("/sbin/ifconfig $iface up 2>/dev/null");
+		$cmd = "/sbin/ifconfig $iface up";
 	}
+
+	$ret = $self->{'act'} ? system($cmd) : 0;
 
 	if ($ret != 0) {
 		if (($? & 127) == 2) {
-			carp "W: ifconfig $iface up interupted";
+			carp "W: '$cmd' interupted\n";
 		}
 		else {
-			carp "W: ifconfig $iface up failed due to error";
+			carp "W: '$cmd' failed due to error: $!";
 		}
 	}
 
 	sleep 1;
 
 	open my $fh, '-|', "/sbin/iwlist $iface scan"
-	        or carp "E: iwlist $iface scan failed: $!\n";
+	        or carp "E: iwlist $iface scan failed: $!";
 	my @s = <$fh>;
 	chomp @s;
 	close $fh;
@@ -505,52 +503,68 @@ sub get_iwlist_res {
 	return undef;
 }
 
-sub prep_wpa_roam {
-	my $self = shift;
-	my $wpa_roam_ex = '/usr/share/doc/wpasupplicant/examples/wpa-roam.conf';
-	my $wpa_roam_cf = '/etc/wpa_supplicant/wpa-roam.conf';
+sub wpa_action {
+	my ($self, $iface, $action) = (shift, shift, shift);
+	my $ret;
 
-	if (not -s $wpa_roam_ex) {
-		croak "W: wpa-roam template not found: " . $wpa_roam_ex . "\n";
+	$ret = $self->{'act'} ? system("wpa_action $iface check") : 0;
+
+	if ($ret != 0) {
+		if (($? & 127) == 2) {
+			carp "W: ifconfig $iface up interupted";
+		}
 	}
 
-	if ($self->{'act'} and not -s $wpa_roam_cf) {
+	return $ret;
+}
+
+sub wpa_drivers {
+	my $self = shift;
+	my ($d, @drivers);
+
+	open my $wpas, '-|', 'wpa_supplicant -h'
+		or carp "W: unable to get driver list from wpa_supplicant: $!";
+	while (<$wpas>) {
+		chomp;
+		/^drivers:/ and $d++;
+		/^options:/ and last;
+		if ($d and m/\s+([^\s]+)\s+=\s+(.*)$/) {
+			if ($1 and $1 ne 'wired') {
+				push @drivers, $1;
+			}
+		}
+	}
+	close $wpas;
+
+	return @drivers;
+}
+
+sub prep_wpa_roam {
+	my ($self, $wpa_roam_cf) = (shift, shift);
+	my $wpa_roam_ex = '/usr/share/doc/wpasupplicant/examples/wpa-roam.conf';
+
+	if (not -s $wpa_roam_ex) {
+		croak "W: wpa-roam template not found: " . $wpa_roam_ex;
+	}
+
+	if (not -s $wpa_roam_cf) {
 		tie(my @wpa, 'Tie::File', $wpa_roam_cf)
-			or croak "E: failed to open " . $wpa_roam_cf . ": $!\n";
+			or return 0;
 
 		open my $example, '<', $wpa_roam_ex
-			or croak "E: failed to open " . $wpa_roam_ex . ": $!\n";
+			or return 0;
 		while (<$example>) {
 			chomp;
 			s/^#\s*update_config=.*/update_config=1/;
-			m/^#/ and next;
-			m/./ or next;
 			push @wpa, $_;
 		}
 		close $example;
 
-		chmod 0600, $wpa_roam_cf;
-	}
-}
-
-sub conf_wpa_roam {
-	my ($self, $iface) = (shift, shift);
-
-	$self->set_iface_conf(
-		$iface, {
-			'class'  => 'allow-hotplug',
-			'method' => 'manual',
-			'stanza' => {
-				'wpa-roam' => '/etc/wpa_supplicant/wpa-roam.conf',
-			},
-		}
-	);
-
-	if (not $self->get_iface_conf('default')) {
-		$self->set_iface_conf('default', { 'method' => 'dhcp', }, );
+		chmod 0640, $wpa_roam_cf
+			or carp "E: failed to chmod $wpa_roam_cf: $!";
 	}
 
-	$self->parse_eni();
+	return 1;
 }
 
 sub debug {

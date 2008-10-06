@@ -182,7 +182,7 @@ sub interface_form {
 		-x          => 1,
 		-y          => 3,
 		-width      => 76,
-		-height     => 7,
+		-height     => 6,
 		-values     => \@i,
 		-labels     => \%i,
 		-onchange   => sub {
@@ -199,9 +199,9 @@ sub interface_form {
 		-bfg        => 'green',
 		-wraparound => 1,
 		-x          => 1,
-		-y          => 10,
+		-y          => 9,
 		-width      => 76,
-		-height     => 7,
+		-height     => 6,
 		-values     => \@l,
 		-labels     => \%l,
 		-onchange   => sub {
@@ -210,9 +210,13 @@ sub interface_form {
 			if ($this->get() eq $l[0]) {
 				$iface = $ceni->question("Name for new logical interface:");
 				$iface =~ s/\s+$//;
-				if ($iface and $iface !~ m/^[-_\w\d]+$/) {
-					$ceni->error("Invalid logical interface name: $iface");
-					$iface = undef;
+				if (not $iface or $iface !~ m/^[-_\w\d]+$/) {
+					if ($iface) {
+						$ceni->error("Invalid logical interface name: $iface");
+					}
+
+					$this->clear_selection();
+					return;
 				}
 			}
 			else {
@@ -227,7 +231,7 @@ sub interface_form {
 		'exit',
 		'Buttonbox',
 		-x       => 30,
-		-y       => 17,
+		-y       => 15,
 		-width   => 12,
 		-height  => 4,
 		-border  => 1,
@@ -308,6 +312,19 @@ sub configure_form {
 	}
 }
 
+sub wifi_or_wpas {
+	my $ret = $ceni->dialog(
+		-title   => "Scan or Roam?",
+		-message => "Select 'Scan' to scan for a wireless network to "
+			    . "connect to now  or 'Roam' set up roaming with "
+			    . "wpa_supplicant and wpa_gui.",
+		-buttons => [ { -label => '< Scan >', },
+			      { -label => '< Roam >', } ],
+	);
+
+	return $ret;
+}
+
 sub wifi_scan {
 	$ceni->status('Scanning for wireless networks...');
 	$bend->iwlist_scan($iface);
@@ -316,9 +333,6 @@ sub wifi_scan {
 
 sub wifi_scan_form {
 	my (@s, %s);
-
-	@s = ('wpa_roam');
-	$s{'wpa_roam'} = 'Setup wireless roaming with wpa_supplicant ...';
 
 	for my $c (sort { $a <=> $b } keys %{ $bend->get_iwlist_res() }) {
 		my $cell = $bend->get_iwlist_res($c);
@@ -374,45 +388,21 @@ sub wifi_scan_form {
 		-x          => 1,
 		-y          => 4,
 		-width      => 76,
-		-height     => 13,
+		-height     => 11,
 		-values     => \@s,
 		-labels     => \%s,
 		-onchange   => sub {
 			my $this = shift;
-
-			if ($this->get() eq $s[0]) {
-				$bend->prep_wpa_roam();
-				$bend->conf_wpa_roam($iface);
-			}
-
 			$wcell = $this->get();
 			$this->parent->lose_focus();
 		},
 	);
 
-	my $wifi_scan_ignore = $wifi_scan_form->add(
-		'wireless_scan_ignore',
-		'Buttonbox',
-		-x       => 15,
-		-y       => 17,
-		-width   => 12,
-		-height  => 4,
-		-border  => 1,
-		-bfg     => 'blue',
-		-buttons => [ {
-				-label   => '[  Skip  ]',
-				-onpress => sub {
-					$wcell = 'none';
-					shift->parent->lose_focus();
-				}
-			}, ],
-	);
-
 	my $wifi_scan_again = $wifi_scan_form->add(
 		'wireless_scan_again',
 		'Buttonbox',
-		-x       => 30,
-		-y       => 17,
+		-x       => 15,
+		-y       => 15,
 		-width   => 12,
 		-height  => 4,
 		-border  => 1,
@@ -426,11 +416,29 @@ sub wifi_scan_form {
 			}, ],
 	);
 
+	my $wifi_scan_ignore = $wifi_scan_form->add(
+		'wireless_scan_ignore',
+		'Buttonbox',
+		-x       => 30,
+		-y       => 15,
+		-width   => 12,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [ {
+				-label   => '[  Skip  ]',
+				-onpress => sub {
+					$wcell = 'none';
+					shift->parent->lose_focus();
+				}
+			}, ],
+	);
+
 	my $wifi_scan_cancel = $wifi_scan_form->add(
 		'wireless_scan_cancel',
 		'Buttonbox',
 		-x       => 45,
-		-y       => 17,
+		-y       => 15,
 		-width   => 14,
 		-height  => 4,
 		-border  => 1,
@@ -438,7 +446,6 @@ sub wifi_scan_form {
 		-buttons => [ {
 				-label   => '[  Cancel  ]',
 				-onpress => sub {
-					$wcell = undef;
 					$iface = undef;
 					shift->parent->lose_focus();
 				}
@@ -449,6 +456,177 @@ sub wifi_scan_form {
 	$wifi_scan_form->set_binding(sub { exit 1; }, "\cC", "\cQ");
 	$wifi_scan_form->modalfocus();
 	$ceni->delete('wireless_scan_form');
+}
+
+sub wpas_conf_form {
+	my @drivers = $bend->wpa_drivers();
+	my %w;
+
+	my $wpas_conf_form = $ceni->add(
+		'wpas_conf_form', 'Window',
+		-title  => "wpa_supplicant settings for $iface",
+		-border => 1,
+		-bfg    => 'green',
+		-tfg    => 'green',
+	);
+
+	$w{'wpa-driver'} = $wpas_conf_form->add(
+		'wpas_driver_list',
+		'Listbox',
+		-title      => 'WPA Driver',
+		-radio      => 1,
+		-wraparound => 1,
+		-ipadleft   => 2,
+		-x          => 1,
+		-y          => 1,
+		-width      => 22,
+		-height     => 5,
+		-border     => 1,
+		-bfg        => 'green',
+		-values     => \@drivers,
+		-selected   => 0,
+	);
+
+	$w{'wpa-debug-level'} = $wpas_conf_form->add(
+		'wpas_log_list',
+		'Listbox',
+		-title      => 'WPA Log Level',
+		-radio      => 1,
+		-wraparound => 1,
+		-ipadleft   => 2,
+		-x          => 23,
+		-y          => 1,
+		-width      => 22,
+		-height     => 5,
+		-border     => 1,
+		-bfg        => 'green',
+		-values     => [ '0', '1', '2'],
+		-labels     => {
+			'0' => 'Quiet',
+			'1' => 'Verbose',
+			'2' => 'Debug',
+		},
+		-selected   => 0,
+	);
+
+	$w{'class'} = $wpas_conf_form->add(
+		'wpas_class_list',
+		'Listbox',
+		-title      => 'Class',
+		-radio      => 1,
+		-wraparound => 1,
+		-ipadleft   => 2,
+		-x          => 45,
+		-y          => 1,
+		-width      => 30,
+		-height     => 5,
+		-border     => 1,
+		-bfg        => 'green',
+		-values     => [ 'allow-hotplug', 'auto', 'manual'],
+		-selected   => 0,
+	);
+
+	$w{'wpa-roam'} = $wpas_conf_form->add(
+		'wpas_conf_input',
+		'TextEntry',
+		-title    => 'Configuration file',
+		-text     => '/etc/wpa_supplicant/wpa-roam.conf',
+		-ipadleft => 2,
+		-x        => 1,
+		-y        => 6,
+		-width    => 74,
+		-border   => 1,
+		-bfg      => 'green',
+	);
+
+	my $wpas_blurb = $wpas_conf_form->add(
+		'wpas_blurb',
+		'TextEntry',
+		-text     => '[Insert text here which describes how wpa-roam works]',
+		-x        => 2,
+		-y        => 10,
+		-width    => 74,
+	);
+
+	my $wpas_accept = $wpas_conf_form->add(
+		'wpas_confirm',
+		'Buttonbox',
+		-x       => 15,
+		-y       => 15,
+		-width   => 12,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [ {
+				-label   => '[ Accept ]',
+				-onpress => sub {
+					if ($bend->prep_wpa_roam($w{'wpa-roam'}->get())) {
+						$wcell++;
+						shift->parent->lose_focus();
+					}
+					else {
+						$ceni->error("Failed to write WPA configuration file.");
+					}
+				}
+			}, ],
+	);
+
+	my $wpas_back = $wpas_conf_form->add(
+		'wpas_back',
+		'Buttonbox',
+		-x       => 30,
+		-y       => 15,
+		-width   => 12,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [ {
+				-label   => '[  Back  ]',
+				-onpress => sub {
+					$wcell = undef;
+					shift->parent->lose_focus();
+				}
+			}, ],
+	);
+
+	my $wpas_cancel = $wpas_conf_form->add(
+		'wpas_cancel',
+		'Buttonbox',
+		-x       => 45,
+		-y       => 15,
+		-width   => 14,
+		-height  => 4,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [ {
+				-label   => '[  Cancel  ]',
+				-onpress => sub {
+					$iface = undef;
+					shift->parent->lose_focus();
+				}
+			}, ],
+	);
+
+	$wpas_accept->focus();
+	$wpas_conf_form->set_binding(sub { exit 1; }, "\cC", "\cQ");
+	$wpas_conf_form->modalfocus();
+	$ceni->delete('wpas_conf_form');
+
+	if ($wcell) {
+		$conf{'class'}  = $w{'class'}->get();
+		$conf{'method'} = 'manual';
+
+		for ('wpa-driver', 'wpa-roam', 'wpa-debug-level') {
+			if ($w{$_} and $w{$_}->get()) {
+				$conf{'stanza'}{$_} = $w{$_}->get();
+			}
+		}
+
+		$bend->set_iface_conf($iface, \%conf);
+		$bend->set_iface_conf('default', { 'method' => 'dhcp', })
+			if not $bend->get_iface_conf('default');
+		$bend->parse_eni();
+	}
 }
 
 sub wifi_conf_form {
@@ -464,77 +642,19 @@ sub wifi_conf_form {
 		-tfg    => 'green',
 	);
 
-	$wifi_conf_form->add(
-		'backend_title', 'TextEntry',
-		-text      => 'Backend:',
-		-border    => 0,
-		-x         => 5,
-		-y         => 1,
-		-width     => 9,
-		-focusable => 0,
-		-readonly  => 1,
-	);
-
-	$w{'backend'} = $wifi_conf_form->add(
-		'backend_list', 'Listbox',
-		-radio      => 1,
-		-wraparound => 1,
-		-ipadleft   => 2,
-		-x          => 15,
-		-y          => 1,
-		-width      => 20,
-		-height     => 2,
-		-values     => [ 'wireless', 'wpa', ],
-		-labels =>
-		        { 'wireless' => 'wireless-tools', 'wpa' => 'wpa_supplicant', },
-		-selected => 0,
-	);
-
-	$wifi_conf_form->add(
-		'mode_title', 'TextEntry',
-		-text      => 'Mode:',
-		-border    => 0,
-		-x         => 45,
-		-y         => 1,
-		-width     => 9,
-		-focusable => 0,
-		-readonly  => 1,
-	);
-
-	$w{'mode'} = $wifi_conf_form->add(
-		'mode_list', 'Listbox',
-		-radio      => 1,
-		-wraparound => 1,
-		-ipadleft   => 2,
-		-x          => 55,
-		-y          => 1,
-		-width      => 20,
-		-height     => 2,
-		-values     => [ 'managed', 'ad-hoc', ],
-		-selected   => 0,
-	);
-
-	$wifi_conf_form->add(
-		'wireless_enc_title', 'TextEntry',
-		-text      => 'Encryption:',
-		-border    => 0,
-		-x         => 25,
-		-y         => 4,
-		-width     => 12,
-		-focusable => 0,
-		-readonly  => 1,
-	);
-
 	$w{'enc'} = $wifi_conf_form->add(
 		'enc_list',
 		'Listbox',
+		-title      => 'Encryption',
 		-radio      => 1,
 		-wraparound => 1,
 		-ipadleft   => 2,
-		-x          => 38,
-		-y          => 4,
-		-width      => 20,
-		-height     => 3,
+		-x          => 1,
+		-y          => 1,
+		-width      => 22,
+		-height     => 5,
+		-border     => 1,
+		-bfg        => 'green',
 		-values     => [ 'None', 'WEP', 'WPA', ],
 		-selected   => 0,
 		-onchange   => sub {
@@ -563,86 +683,100 @@ sub wifi_conf_form {
 		}
 	);
 
-	$wifi_conf_form->add(
-		'wireless_ssid_title', 'TextEntry',
-		-text      => 'Network ESSID:',
-		-border    => 0,
-		-x         => 1,
-		-y         => 9,
-		-width     => 16,
-		-focusable => 0,
-		-readonly  => 1,
+	$w{'mode'} = $wifi_conf_form->add(
+		'mode_list',
+		'Listbox',
+		-title      => 'Mode',
+		-radio      => 1,
+		-wraparound => 1,
+		-ipadleft   => 2,
+		-x          => 23,
+		-y          => 1,
+		-width      => 22,
+		-height     => 5,
+		-border     => 1,
+		-bfg        => 'green',
+		-values     => [ 'managed', 'ad-hoc', ],
+		-selected   => 0,
+	);
+
+	$w{'backend'} = $wifi_conf_form->add(
+		'backend_list',
+		'Listbox',
+		-title      => 'Configuration Backend',
+		-radio      => 1,
+		-wraparound => 1,
+		-ipadleft   => 2,
+		-x          => 45,
+		-y          => 1,
+		-width      => 30,
+		-height     => 5,
+		-border     => 1,
+		-bfg        => 'green',
+		-values     => [ 'wireless', 'wpa', ],
+		-labels     => {
+			'wireless' => 'wireless-tools',
+			'wpa'      => 'wpa_supplicant',
+		},
+		-selected => 0,
 	);
 
 	$w{'ssid'} = $wifi_conf_form->add(
-		'wireless_ssid_input', 'TextEntry',
+		'wireless_ssid_input',
+		'TextEntry',
+		-title    => 'Network ESSID',
+		-x        => 1,
+		-y        => 6,
+		-ipadleft => 1,
+		-width    => 54,
 		-border   => 1,
 		-bfg      => 'green',
-		-x        => 17,
-		-y        => 8,
-		-ipadleft => 1,
-		-width    => 36,
 	);
 
 	$w{'hidden_ssid'} = $wifi_conf_form->add(
 		'wireless_hidden_ssid', 'Checkbox',
-		-label => 'hidden ESSID',
-		-x     => 55,
-		-y     => 9,
-		-width => 20,
-	);
-
-	$wifi_conf_form->add(
-		'wireless_bssid_title', 'TextEntry',
-		-text      => 'Network BSSID:',
-		-border    => 0,
-		-x         => 1,
-		-y         => 12,
-		-width     => 16,
-		-focusable => 0,
-		-readonly  => 1,
+		-label  => 'hidden ESSID',
+		-x      => 55,
+		-y      => 6,
+		-width  => 20,
+		-border => 1,
+		-bfg    => 'blue',
 	);
 
 	$w{'bssid'} = $wifi_conf_form->add(
-		'wireless_bssid_input', 'TextEntry',
+		'wireless_bssid_input',
+		'TextEntry',
+		-title    => 'Network BSSID',
 		-border   => 1,
 		-bfg      => 'green',
-		-x        => 17,
-		-y        => 11,
+		-x        => 1,
+		-y        => 9,
 		-ipadleft => 1,
-		-width    => 36,
+		-width    => 54,
 		-regexp   => 'm/^[0-9A-F:]*$/i',
 	);
 
 	$w{'force_bssid'} = $wifi_conf_form->add(
 		'wireless_force_bssid', 'Checkbox',
-		-label    => 'forced BSSID',
+		-label    => 'force BSSID',
 		-x        => 55,
-		-y        => 12,
+		-y        => 9,
 		-width    => 20,
+		-border   => 1,
+		-bfg      => 'blue',
 		-onchange => sub { $w{'bssid'}->focusable(1); },
-	);
-
-	$wifi_conf_form->add(
-		'wireless_psk_title', 'TextEntry',
-		-text      => 'Preshared Key:',
-		-border    => 0,
-		-x         => 1,
-		-y         => 15,
-		-width     => 16,
-		-focusable => 0,
-		-readonly  => 1,
 	);
 
 	$w{'psk'} = $wifi_conf_form->add(
 		'wireless_psk_input',
 		'PasswordEntry',
+		-title        => 'Preshared Key',
 		-border       => 1,
 		-showoverflow => 0,
 		-bfg          => 'red',
-		-x            => 17,
-		-y            => 14,
-		-width        => 30,
+		-x            => 1,
+		-y            => 12,
+		-width        => 48,
 		-ipadleft     => 1,
 		-focusable    => 0,
 		-onchange     => sub {
@@ -664,10 +798,9 @@ sub wifi_conf_form {
 	$w{'psk_len'} = $wifi_conf_form->add(
 		'wireless_psk_count', 'TextEntry',
 		-text      => '0',
-		-x         => 47,
-		-y         => 14,
+		-x         => 49,
+		-y         => 12,
 		-width     => 6,
-		-height    => 4,
 		-border    => 1,
 		-focusable => 0,
 		-readonly  => 1,
@@ -678,10 +811,9 @@ sub wifi_conf_form {
 	$w{'stdin'} = $wifi_conf_form->add(
 		'wireless_psk_stdin',
 		'Buttonbox',
-		-x         => 54,
-		-y         => 14,
-		-width     => 9,
-		-height    => 4,
+		-x         => 55,
+		-y         => 12,
+		-width     => 10,
 		-border    => 1,
 		-bfg       => 'red',
 		-focusable => 0,
@@ -722,10 +854,9 @@ sub wifi_conf_form {
 	$w{'clear'} = $wifi_conf_form->add(
 		'wireless_psk_clear',
 		'Buttonbox',
-		-x         => 64,
-		-y         => 14,
-		-width     => 9,
-		-height    => 4,
+		-x         => 65,
+		-y         => 12,
+		-width     => 10,
 		-border    => 1,
 		-bfg       => 'red',
 		-focusable => 0,
@@ -749,7 +880,7 @@ sub wifi_conf_form {
 		'wireless_confirm',
 		'Buttonbox',
 		-x       => 15,
-		-y       => 17,
+		-y       => 15,
 		-width   => 12,
 		-height  => 4,
 		-border  => 1,
@@ -795,7 +926,7 @@ sub wifi_conf_form {
 		'wireless_scan',
 		'Buttonbox',
 		-x       => 30,
-		-y       => 17,
+		-y       => 15,
 		-width   => 12,
 		-height  => 4,
 		-border  => 1,
@@ -813,7 +944,7 @@ sub wifi_conf_form {
 		'wireless_cancel',
 		'Buttonbox',
 		-x       => 45,
-		-y       => 17,
+		-y       => 15,
 		-width   => 14,
 		-height  => 4,
 		-border  => 1,
@@ -822,7 +953,6 @@ sub wifi_conf_form {
 				-label   => '[  Cancel  ]',
 				-onpress => sub {
 					$iface = undef;
-					$wcell = undef;
 					shift->parent->lose_focus();
 				}
 			}, ],
@@ -968,27 +1098,19 @@ sub netw_conf_form {
 		-tfg    => 'green',
 	);
 
-	$network_form->add(
-		'method_title', 'TextEntry',
-		-text      => 'Method:',
-		-border    => 0,
-		-x         => 1,
-		-y         => 1,
-		-width     => 12,
-		-focusable => 0,
-		-readonly  => 1,
-	);
-
 	$n{'method'} = $network_form->add(
 		'method_list',
 		'Listbox',
+		-title      => 'Method',
 		-radio      => 1,
 		-wraparound => 1,
 		-ipadleft   => 2,
-		-x          => 15,
+		-x          => 1,
 		-y          => 1,
 		-width      => 20,
-		-height     => 3,
+		-height     => 5,
+		-border     => 1,
+		-bfg        => 'green',
 		-values     => [ 'dhcp', 'static', 'manual', ],
 		-selected   => 0,
 		-onchange   => sub {
@@ -1016,67 +1138,55 @@ sub netw_conf_form {
 	);
 
 	if ($bend->is_iface_valid($iface)) {
-		$network_form->add(
-			'class_title', 'TextEntry',
-			-text      => 'Class:',
-			-border    => 0,
-			-x         => 40,
-			-y         => 1,
-			-width     => 12,
-			-focusable => 0,
-			-readonly  => 1,
-		);
-
 		$n{'class'} = $network_form->add(
 			'class_list', 'Listbox',
+			-title      => 'Class',
 			-radio      => 1,
 			-wraparound => 1,
 			-ipadleft   => 2,
-			-x          => 55,
+			-x          => 25,
 			-y          => 1,
-			-width      => 20,
-			-height     => 3,
+			-width      => 45,
+			-height     => 5,
+			-border     => 1,
+			-bfg        => 'green',
 			-values     => [ 'allow-hotplug', 'auto', 'manual', ],
+			-labels     => {
+				'allow-hotplug' => 'allow-hotplug   (Removable Devices)',
+				'auto'          => 'auto             (Built-In Devices)',
+				'manual'        => 'manual',
+			},
 			-selected   => 0,
 		);
 	}
 
-	$network_form->add(
-		'address_title', 'TextEntry',
-		-text      => 'IP address:',
-		-border    => 0,
-		-x         => 1,
-		-y         => 6,
-		-width     => 14,
-		-focusable => 0,
-		-readonly  => 1,
-	);
-
 	$n{'address'} = $network_form->add(
 		'address_input',
 		'TextEntry',
+		-title     => 'IP Address',
 		-border    => 1,
 		-bfg       => 'red',
-		-x         => 15,
-		-y         => 5,
+		-x         => 1,
+		-y         => 6,
 		-width     => 20,
 		-ipadleft  => 1,
 		-focusable => 0,
 		-regexp    => '/^[0-9\.]*$/',
-		-onchange  => sub { $n{'address'}->delete_till_eol(); },
+		-onchange  => sub { shift->delete_till_eol(); },
 		-onblur    => sub {
-			if (is_ip($n{'address'}->get())) {
-				if ($n{'address'}->get() =~ m/^(10\.)\d+\.\d+\.\d+$/) {
+			my $this = shift;
+			if (is_ip($this->get())) {
+				if ($this->get() =~ m/^(10\.)\d+\.\d+\.\d+$/) {
 					$n{'network'}->text($1 . '0.0.0');
 					$n{'broadcast'}->text($1 . '255.255.255');
 					$n{'netmask'}->text('255.0.0.0');
 				}
-				elsif ($n{'address'}->get() =~ m/^(172\.\d+\.)\d+\.\d+$/) {
+				elsif ($this->get() =~ m/^(172\.\d+\.)\d+\.\d+$/) {
 					$n{'network'}->text($1 . '0.0');
 					$n{'broadcast'}->text($1 . '255.255');
 					$n{'netmask'}->text('255.255.0.0');
 				}
-				elsif ($n{'address'}->get() =~ m/^(\d+\.\d+\.\d+\.)\d+$/) {
+				elsif ($this->get() =~ m/^(\d+\.\d+\.\d+\.)\d+$/) {
 					$n{'network'}->text($1 . '0');
 					$n{'broadcast'}->text($1 . '255');
 					$n{'netmask'}->text('255.255.255.0');
@@ -1085,144 +1195,84 @@ sub netw_conf_form {
 		},
 	);
 
-	$network_form->add(
-		'network_title', 'TextEntry',
-		-text      => 'Network:',
-		-border    => 0,
-		-x         => 40,
-		-y         => 6,
-		-width     => 14,
+	$n{'netmask'} = $network_form->add(
+		'netmask_input', 'TextEntry',
+		-title     => 'Netmask',
+		-border    => 1,
+		-bfg       => 'red',
+		-x         => 1,
+		-y         => 9,
+		-width     => 20,
+		-ipadleft  => 1,
 		-focusable => 0,
-		-readonly  => 1,
+		-regexp    => '/^[0-9\.]*$/',
+		-onchange  => sub { shift->delete_till_eol(); },
 	);
 
 	$n{'network'} = $network_form->add(
 		'network_input', 'TextEntry',
+		-title     => 'Network',
 		-border    => 1,
 		-bfg       => 'red',
-		-x         => 55,
-		-y         => 5,
+		-x         => 25,
+		-y         => 6,
 		-width     => 20,
 		-ipadleft  => 1,
 		-focusable => 0,
 		-regexp    => '/^[0-9\.]*$/',
-		-onchange  => sub { $n{'network'}->delete_till_eol(); },
-	);
-
-	$network_form->add(
-		'netmask_title', 'TextEntry',
-		-text      => 'Netmask:',
-		-border    => 0,
-		-x         => 1,
-		-y         => 9,
-		-width     => 14,
-		-focusable => 0,
-		-readonly  => 1,
-	);
-
-	$n{'netmask'} = $network_form->add(
-		'netmask_input', 'TextEntry',
-		-border    => 1,
-		-bfg       => 'red',
-		-x         => 15,
-		-y         => 8,
-		-width     => 20,
-		-ipadleft  => 1,
-		-focusable => 0,
-		-regexp    => '/^[0-9\.]*$/',
-		-onchange  => sub { $n{'netmask'}->delete_till_eol(); },
-	);
-
-	$network_form->add(
-		'broadcast_title', 'TextEntry',
-		-text      => 'Broadcast:',
-		-border    => 0,
-		-x         => 40,
-		-y         => 9,
-		-width     => 14,
-		-focusable => 0,
-		-readonly  => 1,
+		-onchange  => sub { shift->delete_till_eol(); },
 	);
 
 	$n{'broadcast'} = $network_form->add(
 		'broadcast_input', 'TextEntry',
+		-title     => 'Broadcast',
 		-border    => 1,
 		-bfg       => 'red',
-		-x         => 55,
-		-y         => 8,
+		-x         => 25,
+		-y         => 9,
 		-width     => 20,
 		-ipadleft  => 1,
 		-focusable => 0,
 		-regexp    => '/^[0-9\.]*$/',
-		-onchange  => sub { $n{'broadcast'}->delete_till_eol(); },
-	);
-
-	$network_form->add(
-		'gateway_title', 'TextEntry',
-		-text      => 'Gateway:',
-		-border    => 0,
-		-x         => 1,
-		-y         => 12,
-		-width     => 14,
-		-focusable => 0,
-		-readonly  => 1,
+		-onchange  => sub { shift->delete_till_eol(); },
 	);
 
 	$n{'gateway'} = $network_form->add(
 		'gateway_input', 'TextEntry',
+		-title     => 'Gateway',
 		-border    => 1,
 		-bfg       => 'red',
-		-x         => 15,
-		-y         => 11,
+		-x         => 50,
+		-y         => 6,
 		-width     => 20,
 		-ipadleft  => 1,
 		-focusable => 0,
 		-regexp    => '/^[0-9\.]*$/',
-		-onchange  => sub { $n{'gateway'}->delete_till_eol(); },
+		-onchange  => sub { shift->delete_till_eol(); },
 	);
 
 	if (-x '/sbin/resolvconf') {
-		$network_form->add(
-			'dnssearch_title', 'TextEntry',
-			-text      => 'DNS Search:',
-			-border    => 0,
-			-x         => 40,
-			-y         => 12,
-			-width     => 14,
-			-focusable => 0,
-			-readonly  => 1,
-		);
-
 		$n{'dns-search'} = $network_form->add(
 			'dnssearch_input', 'TextEntry',
+			-title     => 'DNS Search',
 			-border    => 1,
 			-bfg       => 'green',
-			-x         => 55,
-			-y         => 11,
+			-x         => 50,
+			-y         => 9,
 			-width     => 20,
 			-ipadleft  => 1,
 			-focusable => 1,
 		);
 
-		$network_form->add(
-			'dnsnameservers_title', 'TextEntry',
-			-text      => 'Nameservers:',
-			-border    => 0,
-			-x         => 1,
-			-y         => 15,
-			-width     => 14,
-			-focusable => 0,
-			-readonly  => 1,
-		);
-
 		$n{'dns-nameservers'} = $network_form->add(
 			'dnsnameservers_input', 'TextEntry',
+			-title        => 'DNS Nameservers',
 			-border       => 1,
 			-showoverflow => 0,
 			-bfg          => 'green',
-			-x            => 15,
-			-y            => 14,
-			-width        => 60,
+			-x            => 1,
+			-y            => 12,
+			-width        => 69,
 			-ipadleft     => 1,
 			-focusable    => 1,
 		);
@@ -1232,7 +1282,7 @@ sub netw_conf_form {
 		'confirm',
 		'Buttonbox',
 		-x       => 15,
-		-y       => 17,
+		-y       => 15,
 		-width   => 12,
 		-height  => 4,
 		-border  => 1,
@@ -1278,7 +1328,7 @@ sub netw_conf_form {
 		'back',
 		'Buttonbox',
 		-x       => 30,
-		-y       => 17,
+		-y       => 15,
 		-width   => 12,
 		-height  => 4,
 		-border  => 1,
@@ -1286,12 +1336,8 @@ sub netw_conf_form {
 		-buttons => [ {
 				-label   => '[  Back  ]',
 				-onpress => sub {
-					if ($wcell) {
-						$wcell = undef;
-					}
-					else {
-						$iface = undef;
-					}
+					if ($wcell) { $wcell = undef; }
+					else        { $iface = undef; }
 					shift->parent->lose_focus();
 				}
 			}, ],
@@ -1301,7 +1347,7 @@ sub netw_conf_form {
 		'cancel',
 		'Buttonbox',
 		-x       => 45,
-		-y       => 17,
+		-y       => 15,
 		-width   => 14,
 		-height  => 4,
 		-border  => 1,
@@ -1387,10 +1433,9 @@ sub ifupdown_iface {
 
 sub qanother_iface {
 	my $exit = $ceni->dialog(
-			-message => "Select 'yes' to exit or 'no' to continue.",
-			-title   => "Do you want to exit?",
-			-buttons => ['yes', 'no'],
-
+		-title   => "Do you want to exit?",
+		-message => "Select 'yes' to exit or 'no' to continue.",
+		-buttons => ['yes', 'no'],
 	);
 
 	$exit or $iface = undef;
@@ -1420,33 +1465,29 @@ MAIN:	while (1) {
 		if ($bend->is_iface_valid($iface)) {
 			if ($bend->is_iface_wireless($iface)) {
 				$wcell = undef;
-WIFI:				until ($wcell) {
-					wifi_scan();
-					wifi_scan_form();
-					if (not $iface) { next MAIN; }
-					if (not $wcell) { next WIFI; }
-					if ($wcell eq 'wpa_roam') {
-						# We could provide a wpa_roam specific
-						# form here (and remove conf_wpa_roam()
-						# from the backend), or at least a large
-						# message about how to manage the roaming
-						# daemon.
-						# Such a form could allow for configuration
-						# of supplicant verbosity or other wpa-*
-						# options applicable to roaming mode such
-						# as driver selection. ('class' too)
-						;
+WIFI:				while (1) {
+					if (wifi_or_wpas()) {
+						wpas_conf_form();
+						if (not $iface) { next MAIN; }
+						if (not $wcell) { next WIFI; }
 					}
 					else {
-						wifi_conf_form();
-						if (not $iface) { next MAIN; }
-						if (not $wcell) { next WIFI; }
-						netw_conf_form();
-						if (not $iface) { next MAIN; }
-						if (not $wcell) { next WIFI; }
+SCAN:						until ($wcell) {
+							wifi_scan();
+							wifi_scan_form();
+							if (not $iface) { next MAIN; }
+							if (not $wcell) { next SCAN; }
+							wifi_conf_form();
+							if (not $iface) { next MAIN; }
+							if (not $wcell) { next SCAN; }
+							netw_conf_form();
+							if (not $iface) { next MAIN; }
+							if (not $wcell) { next SCAN; }
+						}
 						write_eni_conf();
 					}
 					ifupdown_iface();
+					last WIFI;
 				}
 			}
 			else {

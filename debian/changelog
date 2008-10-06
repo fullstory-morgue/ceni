@@ -21,8 +21,11 @@ ceni (1.42) UNRELEASED; urgency=low
     interfaces.
   * Use dh from debhelper >= 7, reduce debian/rules.
   * Add icons/Makefile to replace create-icons debian/rules target.
+  * Reduce the vertical footprint of user interface.
+  * Use border titles rather than borderless boxes for input field labels.
+  * Add wpa_supplicant configuration form.
 
- -- Kel Modderman <kel@otaku42.de>  Sat, 04 Oct 2008 03:10:18 +1000
+ -- Kel Modderman <kel@otaku42.de>  Tue, 07 Oct 2008 09:08:50 +1000
 
 ceni (1.41) unstable; urgency=low
 
