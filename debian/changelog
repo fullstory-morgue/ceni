@@ -28,8 +28,10 @@ ceni (1.42) UNRELEASED; urgency=low
   * Add vertical scroll bar to listboxes that could have more items that
     allocated lines.
   * Tweak layout of wireless settings form.
+  * Add support for selecting WPA roam initial template and final
+    configuration location.
 
- -- Kel Modderman <kel@otaku42.de>  Tue, 07 Oct 2008 16:48:38 +1000
+ -- Kel Modderman <kel@otaku42.de>  Tue, 07 Oct 2008 17:31:40 +1000
 
 ceni (1.41) unstable; urgency=low
 

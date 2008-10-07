@@ -540,8 +540,7 @@ sub wpa_drivers {
 }
 
 sub prep_wpa_roam {
-	my ($self, $wpa_roam_cf) = (shift, shift);
-	my $wpa_roam_ex = '/usr/share/doc/wpasupplicant/examples/wpa-roam.conf';
+	my ($self, $wpa_roam_ex, $wpa_roam_cf) = (shift, shift, shift);
 
 	if (not -s $wpa_roam_ex) {
 		croak "W: wpa-roam template not found: " . $wpa_roam_ex;

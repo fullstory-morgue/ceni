@@ -532,14 +532,78 @@ sub wpas_conf_form {
 	$w{'wpa-roam'} = $wpas_conf_form->add(
 		'wpas_conf_input',
 		'TextEntry',
-		-title    => 'Configuration file',
-		-text     => '/etc/wpa_supplicant/wpa-roam.conf',
-		-ipadleft => 2,
-		-x        => 1,
-		-y        => 6,
-		-width    => 74,
-		-border   => 1,
-		-bfg      => 'green',
+		-title     => 'Configuration Location',
+		-text      => '/etc/wpa_supplicant/wpa-roam.conf',
+		-readonly  => 1,
+		-focusable => 0,
+		-ipadleft  => 2,
+		-x         => 1,
+		-y         => 6,
+		-width     => 62,
+		-border    => 1,
+		-bfg       => 'green',
+	);
+
+	my $wpas_conf = $wpas_conf_form->add(
+		'wpas_templ_filesaver',
+		'Buttonbox',
+		-x       => 63,
+		-y       => 6,
+		-width   => 12,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [ {
+				-label   => '[ Select ]',
+				-onpress => sub {
+					my $conf = $ceni->savefilebrowser(
+						-editfilename => 1,
+						-file         => $w{'wpa-roam'}->get(),
+					);
+
+					$w{'wpa-roam'}->text($conf);
+				}
+			}, ],
+	);
+
+	$w{'wpa-roam-template'} = $wpas_conf_form->add(
+		'wpas_conf_template_input',
+		'TextEntry',
+		-title     => 'Configuration Template',
+		-text      => '/usr/share/doc/wpasupplicant/examples/wpa-roam.conf',
+		-readonly  => 1,
+		-focusable => 0,
+		-ipadleft  => 2,
+		-x         => 1,
+		-y         => 9,
+		-width     => 62,
+		-border    => 1,
+		-bfg       => 'green',
+	);
+
+	my $wpas_templ = $wpas_conf_form->add(
+		'wpas_templ_fileloader',
+		'Buttonbox',
+		-x       => 63,
+		-y       => 9,
+		-width   => 12,
+		-border  => 1,
+		-bfg     => 'blue',
+		-buttons => [ {
+				-label   => '[ Select ]',
+				-onpress => sub {
+					my $templ = $ceni->loadfilebrowser(
+						-editfilename => 0,
+						-file         => $w{'wpa-roam-template'}->get(),
+					);
+
+					if (-T $templ) {
+						$w{'wpa-roam-template'}->text($templ);
+					}
+					else {
+						$ceni->error("Invalid file: $templ");
+					}
+				}
+			}, ],
 	);
 
 	my $wpas_blurb = $wpas_conf_form->add(
@@ -547,7 +611,7 @@ sub wpas_conf_form {
 		'TextEntry',
 		-text      => '[Insert text here which describes how wpa-roam works]',
 		-x         => 2,
-		-y         => 10,
+		-y         => 12,
 		-width     => 74,
 		-focusable => 0,
 	);
@@ -558,13 +622,14 @@ sub wpas_conf_form {
 		-x       => 15,
 		-y       => 15,
 		-width   => 12,
-		-height  => 4,
 		-border  => 1,
 		-bfg     => 'blue',
 		-buttons => [ {
 				-label   => '[ Accept ]',
 				-onpress => sub {
-					if ($bend->prep_wpa_roam($w{'wpa-roam'}->get())) {
+					if ($bend->prep_wpa_roam($w{'wpa-roam-template'}->get(),
+								 $w{'wpa-roam'}->get()))
+					{
 						$wcell++;
 						shift->parent->lose_focus();
 					}
@@ -581,7 +646,6 @@ sub wpas_conf_form {
 		-x       => 30,
 		-y       => 15,
 		-width   => 12,
-		-height  => 4,
 		-border  => 1,
 		-bfg     => 'blue',
 		-buttons => [ {
@@ -599,7 +663,6 @@ sub wpas_conf_form {
 		-x       => 45,
 		-y       => 15,
 		-width   => 14,
-		-height  => 4,
 		-border  => 1,
 		-bfg     => 'blue',
 		-buttons => [ {
