@@ -233,15 +233,15 @@ sub interface_form {
 					-path         => '/etc/wpa_supplicant/',
 				);
 
-				if (-T $conf) {
-					@m = $bend->wpa_mappings($conf);
-				}
-				elsif (not $conf) {
+				if (not $conf or not -T $conf) {
+					if ($conf) {
+						$ceni->error("File cannot be parsed: $conf");
+					}
+					$this->clear_selection();
 					return;
 				}
 				else {
-					$ceni->error("File cannot be parsed: $conf");
-					return;
+					@m = $bend->wpa_mappings($conf);
 				}
 
 				if (not @m) {
