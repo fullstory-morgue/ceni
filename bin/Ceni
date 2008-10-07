@@ -609,12 +609,17 @@ sub wpas_conf_form {
 
 	my $wpas_blurb = $wpas_conf_form->add(
 		'wpas_blurb',
-		'TextEntry',
-		-text      => '[Insert text here which describes how wpa-roam works]',
-		-x         => 2,
-		-y         => 12,
-		-width     => 74,
-		-focusable => 0,
+		'TextViewer',
+		-text       => "After the roaming configuration is activated, wireless "
+			       . "network scanning and configuration can be done via "
+			       . "wpa_gui or wpa_cli. For more info see:\n"
+			       . "\tfile:///usr/share/doc/wpasupplicant/README.Debian.gz",
+		-x          => 2,
+		-y          => 12,
+		-width      => 74,
+		-height     => 3,
+		-focusable  => 0,
+		-wrapping   => 1,
 	);
 
 	my $wpas_accept = $wpas_conf_form->add(
@@ -1454,7 +1459,7 @@ sub netw_conf_form {
 		}
 	}
 
-	$n{'method'}->focus();
+	$confirm->focus();
 	$network_form->set_binding(sub { exit 1; }, "\cC", "\cQ");
 	$network_form->modalfocus();
 	$ceni->delete('network_form');
@@ -1492,9 +1497,7 @@ sub ifupdown_iface {
 	$bend->ifup($iface);
 
 	print "\n";
-	print '#' x 33, "\n";
-	print "#  Press Enter key to continue  #\n";
-	print '#' x 33, "\n";
+	print "Press Enter key to continue ...\n";
 	print "\n";
 
 	ReadMode('noecho');
