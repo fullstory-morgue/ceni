@@ -462,6 +462,7 @@ sub wifi_scan_form {
 }
 
 sub wpas_conf_form {
+	my $current = $bend->get_iface_conf($iface);
 	my @drivers = $bend->wpa_drivers();
 	my %w;
 
@@ -673,6 +674,12 @@ sub wpas_conf_form {
 				}
 			}, ],
 	);
+
+	if ($current and $current->{'stanza'} and
+	    -T $current->{'stanza'}->{'wpa-roam'})
+	{
+		$w{'wpa-roam'}->text($current->{'stanza'}->{'wpa-roam'});
+	}
 
 	$wpas_accept->focus();
 	$wpas_conf_form->set_binding(sub { exit 1; }, "\cC", "\cQ");
