@@ -30,8 +30,10 @@ ceni (1.42) UNRELEASED; urgency=low
   * Tweak layout of wireless settings form.
   * Add support for selecting WPA roam initial template and final
     configuration location.
+  * Ceni really depends on wireless-tools and wpasupplicant. Suggest
+    wpagui.
 
- -- Kel Modderman <kel@otaku42.de>  Tue, 07 Oct 2008 17:31:40 +1000
+ -- Kel Modderman <kel@otaku42.de>  Tue, 07 Oct 2008 19:42:42 +1000
 
 ceni (1.41) unstable; urgency=low
 

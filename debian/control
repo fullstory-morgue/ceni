@@ -11,8 +11,15 @@ Standards-Version: 3.8.0
 
 Package: ceni
 Architecture: all
-Depends: ${perl:Depends}, libcurses-ui-perl, libterm-readkey-perl, ifupdown, udev
-Recommends: wireless-tools, wpasupplicant, resolvconf
+Depends: ${perl:Depends},
+ libcurses-ui-perl,
+ libterm-readkey-perl,
+ ifupdown,
+ udev,
+ wireless-tools,
+ wpasupplicant
+Recommends: resolvconf
+Suggests: wpagui
 Conflicts: configure-networkcard (< 0.7.22)
 Description: Curses interface to /etc/network/interfaces
  A Curses user interface for configuring network interfaces with ifupdown.
