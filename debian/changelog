@@ -24,8 +24,12 @@ ceni (1.42) UNRELEASED; urgency=low
   * Reduce the vertical footprint of user interface.
   * Use border titles rather than borderless boxes for input field labels.
   * Add wpa_supplicant configuration form.
+  * Remove the manual option from network method list, it is useless.
+  * Add vertical scroll bar to listboxes that could have more items that
+    allocated lines.
+  * Tweak layout of wireless settings form.
 
- -- Kel Modderman <kel@otaku42.de>  Tue, 07 Oct 2008 09:08:50 +1000
+ -- Kel Modderman <kel@otaku42.de>  Tue, 07 Oct 2008 16:48:38 +1000
 
 ceni (1.41) unstable; urgency=low
 
