@@ -318,7 +318,7 @@ sub wifi_or_wpas {
 	my $ret = $ceni->dialog(
 		-title   => "Scan or Roam?",
 		-message => "Select 'Scan' to scan for a wireless network to "
-			    . "connect to right now, or select 'Roam' set up "
+			    . "connect to right now.\nSelect 'Roam' set up "
 			    . "wireless roaming with wpa_supplicant/wpa_gui.",
 		-buttons => [ { -label => '< Scan >', },
 			      { -label => '< Roam >', } ],
