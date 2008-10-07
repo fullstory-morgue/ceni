@@ -1,4 +1,4 @@
-ceni (2.0) UNRELEASED; urgency=low
+ceni (2.0) unstable; urgency=low
 
   [ Niall Walsh ]
   * Add basic support to enable wpa-roam and edit logical interfaces.
