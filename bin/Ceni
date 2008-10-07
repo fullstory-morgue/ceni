@@ -133,7 +133,7 @@ sub psk_is_valid {
 }
 
 sub interface_form {
-	my (@i, %i, @l, %l);
+	my (@i, %i, @l, %l, @m);
 
 	for my $if (sort keys %{ $bend->get_iface_info() }) {
 		my $info = $bend->get_iface_info($if);
@@ -144,9 +144,6 @@ sub interface_form {
 		push @i, $if;
 	}
 
-	@l = ('new');
-	$l{'new'} = 'Add new logical interface ...';
-
 	for my $if (sort keys %{ $bend->get_iface_conf() }) {
 		if (not $bend->is_iface_valid($if) and $if ne 'lo') {
 			$l{$if} = $if;
@@ -155,7 +152,8 @@ sub interface_form {
 	}
 
 	my $interface_form = $ceni->add(
-		'interface_form', 'Window',
+		'interface_form',
+		'Window',
 		-title  => 'Network Interfaces',
 		-border => 1,
 		-bfg    => 'green',
@@ -163,7 +161,8 @@ sub interface_form {
 	);
 
 	$interface_form->add(
-		'interface_title', 'TextEntry',
+		'interface_title',
+		'TextEntry',
 		-text      => 'Choose a network interface to configure:',
 		-border    => 0,
 		-x         => 3,
@@ -174,8 +173,9 @@ sub interface_form {
 	);
 
 	my $interface_list = $interface_form->add(
-		'interface_list', 'Listbox',
-		-title      => 'Hardware interfaces.',
+		'interface_list',
+		'Listbox',
+		-title      => 'Hardware interfaces',
 		-border     => 1,
 		-bfg        => 'green',
 		-wraparound => 1,
@@ -193,23 +193,28 @@ sub interface_form {
 		},
 	);
 
-	my $logical_list = $interface_form->add(
-		'logical_list', 'Listbox',
-		-title      => 'Logical interfaces.',
+	my $action_list = $interface_form->add(
+		'action_list',
+		'Listbox',
+		-title      => 'Interface Actions',
 		-border     => 1,
 		-bfg        => 'green',
 		-wraparound => 1,
 		-vscrollbar => 1,
 		-x          => 1,
 		-y          => 9,
-		-width      => 76,
+		-width      => 42,
 		-height     => 6,
-		-values     => \@l,
-		-labels     => \%l,
+		-ipadleft   => 1,
+		-values     => [ 'new', 'wpa', ],
+		-labels     => {
+			'new'  => 'Configure new logical interface ...',
+			'wpa'  => 'Configure all wpa-roam mappings ...',
+		},
 		-onchange   => sub {
 			my $this = shift;
 
-			if ($this->get() eq $l[0]) {
+			if ($this->get() eq 'new') {
 				$iface = $ceni->question("Name for new logical interface:");
 				$iface =~ s/\s+$//;
 				if (not $iface or $iface !~ m/^[-_\w\d]+$/) {
@@ -221,10 +226,50 @@ sub interface_form {
 					return;
 				}
 			}
-			else {
-				$iface = $this->get();
+			elsif ($this->get() eq 'wpa') {
+				my $conf = $ceni->loadfilebrowser(
+					-title        => 'Load WPA Configuration file',
+					-editfilename => 0,
+					-path         => '/etc/wpa_supplicant/',
+				);
+
+				if (-T $conf) {
+					@m = $bend->wpa_mappings($conf);
+				}
+				else {
+					$ceni->error("File cannot be parsed: $conf");
+					return;
+				}
+
+				if (not @m) {
+					$ceni->dialog("There are no logical interfaces "
+						      . "to be mapped");
+					return;
+				}
 			}
 
+			$this->parent->loose_focus();
+		},
+	);
+
+	my $logical_list = $interface_form->add(
+		'logical_list',
+		'Listbox',
+		-title      => 'Logical interfaces',
+		-border     => 1,
+		-bfg        => 'green',
+		-wraparound => 1,
+		-vscrollbar => 1,
+		-x          => 43,
+		-y          => 9,
+		-width      => 34,
+		-height     => 6,
+		-ipadleft   => 1,
+		-values     => \@l,
+		-labels     => \%l,
+		-onchange   => sub {
+			my $this = shift;
+			$iface = $this->get();
 			$this->parent->loose_focus();
 		},
 	);
@@ -248,6 +293,18 @@ sub interface_form {
 	$interface_form->set_binding(sub { exit 1; }, "\cC", "\cQ");
 	$interface_form->modalfocus();
 	$ceni->delete('interface_form');
+
+	if (@m) {
+		while (@m) {
+			$iface = pop @m;
+			if (not $bend->get_iface_conf($iface)) {
+				netw_conf_form();
+				if (not $iface) { next; };
+				write_eni_conf();
+			}
+		}
+		$iface = undef;
+	}
 }
 
 sub configure_form {
@@ -1582,6 +1639,8 @@ SCAN:						until ($wcell) {
 			netw_conf_form();
 			if (not $iface) { next MAIN; }
 			write_eni_conf();
+			$iface = undef;
+			next MAIN;
 		}
 
 		qanother_iface();

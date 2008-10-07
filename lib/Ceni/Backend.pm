@@ -539,6 +539,23 @@ sub wpa_drivers {
 	return @drivers;
 }
 
+sub wpa_mappings {
+	my ($self, $wpa_roam_cf) = (shift, shift);
+	my @mappings;
+
+	open my $wpa, '<', $wpa_roam_cf
+		or carp "E: failed to read $wpa_roam_cf: $!";
+	while (<$wpa>) {
+		chomp;
+		if (m/^\s*id_str="?([^"\s]+)"?/) {
+			push @mappings, $1;
+		}
+	}
+	close $wpa;
+
+	return @mappings;
+}
+
 sub prep_wpa_roam {
 	my ($self, $wpa_roam_ex, $wpa_roam_cf) = (shift, shift, shift);
 
