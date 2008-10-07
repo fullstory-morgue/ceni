@@ -32,8 +32,10 @@ ceni (1.42) UNRELEASED; urgency=low
     configuration location.
   * Ceni really depends on wireless-tools and wpasupplicant. Suggest
     wpagui.
+  * Fix pod2man errors by using proper =over/=back syntax for list
+    items.
 
- -- Kel Modderman <kel@otaku42.de>  Tue, 07 Oct 2008 19:42:42 +1000
+ -- Kel Modderman <kel@otaku42.de>  Tue, 07 Oct 2008 19:51:36 +1000
 
 ceni (1.41) unstable; urgency=low
 

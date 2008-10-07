@@ -60,6 +60,8 @@ prints the configuration data.
 
 =head1 OPTIONS
 
+=over
+
 =item B<--iface> <iface>
 
 The target network interface with kernel name <iface>.
@@ -69,6 +71,8 @@ Exmaples of <iface> are "eth0", "ath0" and "wlan0".
 
 Input file containing network interface ifupdown configuration.
 If no input file is specified, /etc/network/interfaces is assumed.
+
+=back
 
 =head1 AUTHOR
 

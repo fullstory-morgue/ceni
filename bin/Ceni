@@ -1611,6 +1611,8 @@ A Curses user interface for configuring network interfaces with ifupdown.
 
 =head1 OPTIONS
 
+=over
+
 =item B<--file> filename
 
 Use filename as alternative /etc/network/interfaces
@@ -1627,6 +1629,8 @@ Must be first argument to have effect.
 =item B<--debug>
 
 Debug output piped to /tmp/ceni.log
+
+=back
 
 =head1 AUTHOR
 

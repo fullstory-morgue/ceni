@@ -87,6 +87,8 @@ each interface.
 
 =head1 OPTIONS
 
+=over
+
 =item B<--iface> <iface>
 
 Detect and print information for the interface with kernel name <iface>.
@@ -99,6 +101,8 @@ Detect only ethernet devices, not wirless.
 =item B<--wifi>
 
 Detect only wireless devices, not ethernet.
+
+=back
 
 =head1 AUTHOR
 

@@ -58,6 +58,8 @@ for the selected interface.
 
 =head1 OPTIONS
 
+=over
+
 =item B<--iface> <iface>
 
 The target network interface with kernel name <iface>.
@@ -71,6 +73,8 @@ Input file containing network interface ifupdown configuration.
 
 Output file to write or update configuration data read from input file.
 If no output file is specified, /etc/network/interfaces is assumed.
+
+=back
 
 =head1 AUTHOR
 
