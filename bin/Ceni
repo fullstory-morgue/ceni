@@ -505,9 +505,9 @@ sub wpas_conf_form {
 		-bfg        => 'green',
 		-values     => [ '0', '1', '2'],
 		-labels     => {
-			'0' => 'Quiet',
-			'1' => 'Verbose',
-			'2' => 'Debug',
+			'0' => 'quiet',
+			'1' => 'verbose',
+			'2' => 'debug',
 		},
 		-selected   => 0,
 	);
