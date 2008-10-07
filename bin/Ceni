@@ -320,6 +320,7 @@ sub wifi_or_wpas {
 		-message => "Select 'Scan' to scan for a wireless network to "
 			    . "connect to right now.\nSelect 'Roam' set up "
 			    . "wireless roaming with wpa_supplicant/wpa_gui.",
+		-bfg     => 'green',
 		-buttons => [ { -label => '< Scan >', },
 			      { -label => '< Roam >', } ],
 	);
@@ -540,7 +541,7 @@ sub wpas_conf_form {
 		-ipadleft  => 2,
 		-x         => 1,
 		-y         => 6,
-		-width     => 62,
+		-width     => 64,
 		-border    => 1,
 		-bfg       => 'green',
 	);
@@ -548,13 +549,13 @@ sub wpas_conf_form {
 	my $wpas_conf = $wpas_conf_form->add(
 		'wpas_templ_filesaver',
 		'Buttonbox',
-		-x       => 63,
+		-x       => 65,
 		-y       => 6,
-		-width   => 12,
+		-width   => 10,
 		-border  => 1,
 		-bfg     => 'blue',
 		-buttons => [ {
-				-label   => '[ Select ]',
+				-label   => '[ Save ]',
 				-onpress => sub {
 					my $conf = $ceni->savefilebrowser(
 						-editfilename => 1,
@@ -576,7 +577,7 @@ sub wpas_conf_form {
 		-ipadleft  => 2,
 		-x         => 1,
 		-y         => 9,
-		-width     => 62,
+		-width     => 64,
 		-border    => 1,
 		-bfg       => 'green',
 	);
@@ -584,13 +585,13 @@ sub wpas_conf_form {
 	my $wpas_templ = $wpas_conf_form->add(
 		'wpas_templ_fileloader',
 		'Buttonbox',
-		-x       => 63,
+		-x       => 65,
 		-y       => 9,
-		-width   => 12,
+		-width   => 10,
 		-border  => 1,
 		-bfg     => 'blue',
 		-buttons => [ {
-				-label   => '[ Select ]',
+				-label   => '[ Load ]',
 				-onpress => sub {
 					my $templ = $ceni->loadfilebrowser(
 						-editfilename => 0,
@@ -1512,6 +1513,7 @@ sub qanother_iface {
 	my $exit = $ceni->dialog(
 		-title   => "Do you want to exit?",
 		-message => "Select 'yes' to exit or 'no' to continue.",
+		-bfg     => 'green',
 		-buttons => ['yes', 'no'],
 	);
 
