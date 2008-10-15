@@ -1,9 +1,5 @@
-ceni (2.1) UNRELEASED; urgency=low
+ceni (2.1) unstable; urgency=low
 
-  [ Stefan Lippers-Hollmann ]
-  * NOT RELEASED YET
-
-  [ Kel Modderman ]
   * Consider that a user PATH may not contain /sbin, so use absolute
     path to execute iwgetid and udevadm
 
