@@ -1,3 +1,9 @@
+ceni (2.2) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed, 15 Oct 2008 18:20:41 +0200
+
 ceni (2.1) unstable; urgency=low
 
   * Consider that a user PATH may not contain /sbin, so use absolute
