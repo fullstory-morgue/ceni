@@ -1,8 +1,13 @@
 ceni (2.1) UNRELEASED; urgency=low
 
+  [ Stefan Lippers-Hollmann ]
   * NOT RELEASED YET
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 07 Oct 2008 19:23:02 +0200
+  [ Kel Modderman ]
+  * Consider that a user PATH may not contain /sbin, so use absolute
+    path to execute iwgetid and udevadm
+
+ -- Kel Modderman <kel@otaku42.de>  Thu, 16 Oct 2008 02:04:29 +1000
 
 ceni (2.0) unstable; urgency=low
 

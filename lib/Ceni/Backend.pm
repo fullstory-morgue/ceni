@@ -31,7 +31,7 @@ sub is_iface_wireless {
 		$retval++;
 	}
 	else {
-		open my $iwgetid, '-|', "iwgetid --protocol " . $iface
+		open my $iwgetid, '-|', "/sbin/iwgetid --protocol " . $iface
 		        or carp "W: could not execute iwgetid --protocol $iface: $!";
 		while (<$iwgetid>) {
 			chomp;
@@ -47,7 +47,7 @@ sub nic_info {
 	my ($self) = (shift);
 
 	my %i;
-	my $udevinfo_cmd = (-x '/sbin/udevadm') ? 'udevadm info' : 'udevinfo';
+	my $udevinfo_cmd = (-x '/sbin/udevadm') ? '/sbin/udevadm info' : 'udevinfo';
 
 	$i{$_}{'sysfs'} = '/sys/class/net/' . $_ for map {
 		s|.*/||;
