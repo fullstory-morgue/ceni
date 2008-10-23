@@ -1,8 +1,12 @@
 ceni (2.2) UNRELEASED; urgency=low
 
+  [ Stefan Lippers-Hollmann ]
   * NOT RELEASED YET
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed, 15 Oct 2008 18:20:41 +0200
+  [ Bernard Gray ]
+  * update icon candidate to something a little more themed with new wpagui icon
+
+ -- Bernard Gray <bernard.gray@gmail.com>  Thu, 23 Oct 2008 14:57:59 +1100
 
 ceni (2.1) unstable; urgency=low
 
