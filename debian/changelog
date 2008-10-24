@@ -1,8 +1,12 @@
 ceni (2.3) UNRELEASED; urgency=low
 
+  [ Stefan Lippers-Hollmann ]
   * NOT RELEASED YET
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 23 Oct 2008 21:07:41 +0200
+  [ Bernard Gray ]
+  * replace icon with a newie 
+
+ -- Bernard Gray <bernard.gray@gmail.com>  Fri, 24 Oct 2008 22:37:46 +1100
 
 ceni (2.2) unstable; urgency=low
 
