@@ -5,8 +5,10 @@ ceni (2.3) UNRELEASED; urgency=low
 
   [ Bernard Gray ]
   * replace icon with a newie 
+  * modify copyright to suit new icon
+  * cleanup junk in icon svg, convert to plain svg
 
- -- Bernard Gray <bernard.gray@gmail.com>  Fri, 24 Oct 2008 22:37:46 +1100
+ -- Bernard Gray <bernard.gray@gmail.com>  Fri, 24 Oct 2008 22:49:48 +1100
 
 ceni (2.2) unstable; urgency=low
 
