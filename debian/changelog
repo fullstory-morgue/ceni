@@ -8,7 +8,10 @@ ceni (2.3) UNRELEASED; urgency=low
   * modify copyright to suit new icon
   * cleanup junk in icon svg, convert to plain svg
 
- -- Bernard Gray <bernard.gray@gmail.com>  Fri, 24 Oct 2008 22:49:48 +1100
+  [ Kel Modderman ]
+  * When getting lspci device description, only accept one line of output.
+
+ -- Kel Modderman <kel@otaku42.de>  Sun, 26 Oct 2008 10:10:44 +1000
 
 ceni (2.2) unstable; urgency=low
 

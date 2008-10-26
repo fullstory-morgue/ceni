@@ -82,7 +82,7 @@ sub nic_info {
 		if ($bus eq 'pci' or $bus eq 'ssb') {
 			my ($vendor, $device) = @{ $i{$if} }{ 'vendor', 'device' };
 
-			$desc = `lspci -d $vendor:$device 2>/dev/null`;
+			$desc = `lspci -d $vendor:$device 2>/dev/null | head -n1`;
 			$desc ||= "PCI device $vendor:$device";
 
 			chomp($desc);
