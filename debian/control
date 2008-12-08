@@ -21,7 +21,6 @@ Depends: ${misc:Depends},
          wpasupplicant
 Recommends: resolvconf
 Suggests: wpagui
-Conflicts: configure-networkcard (< 0.7.22)
 Description: Curses interface to /etc/network/interfaces
  A Curses user interface for configuring network interfaces with ifupdown.
  Ceni can manage basic network interface ifupdown configuration stanzas for
