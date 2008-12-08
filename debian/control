@@ -11,13 +11,14 @@ Standards-Version: 3.8.0
 
 Package: ceni
 Architecture: all
-Depends: ${perl:Depends},
- libcurses-ui-perl,
- libterm-readkey-perl,
- ifupdown,
- udev,
- wireless-tools,
- wpasupplicant
+Depends: ${misc:Depends},
+         ${perl:Depends},
+         libcurses-ui-perl,
+         libterm-readkey-perl,
+         ifupdown,
+         udev,
+         wireless-tools,
+         wpasupplicant
 Recommends: resolvconf
 Suggests: wpagui
 Conflicts: configure-networkcard (< 0.7.22)
