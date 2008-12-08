@@ -1,3 +1,9 @@
+ceni (2.5) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 08 Dec 2008 21:19:07 +0100
+
 ceni (2.4) unstable; urgency=low
 
   * make lintian happy and depend on ${misc:Depends}.
