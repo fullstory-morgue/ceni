@@ -1,8 +1,8 @@
-ceni (2.5) UNRELEASED; urgency=low
+ceni (2.5) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * fix desktop-entry-contains-encoding-key.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 08 Dec 2008 21:19:07 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 20 Feb 2009 15:15:27 +0100
 
 ceni (2.4) unstable; urgency=low
 
