@@ -410,9 +410,9 @@ sub wifi_scan_form {
 			$s{$c} .= sprintf "%-25s", '"' . $cell->{'ssid'} . '"';
 		}
 
-		$s{$c} .= sprintf "%-14s", "Signal: " . $cell->{'qual'};
+		$s{$c} .= sprintf "%-14s", "Signal: " . $cell->{'signal'};
 
-		if ($cell->{'enc'} eq 'on') {
+		if ($cell->{'enc'}) {
 			$s{$c} .= $cell->{'wpa'} ? " Enc: WPA " : " Enc: WEP ";
 		}
 		else {

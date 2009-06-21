@@ -406,7 +406,7 @@ sub ifstate {
 
 sub iwlist_scan {
 	my ($self, $iface) = (shift, shift);
-	my ($ret, $cmd);
+	my ($ret, $cmd, $fh, @s, $c, $l, %w);
 
 	if (-x '/bin/ip') {
 		$cmd = "/bin/ip link set $iface up";
@@ -428,59 +428,111 @@ sub iwlist_scan {
 
 	sleep 1;
 
-	open my $fh, '-|', "/sbin/iwlist $iface scan"
-	        or carp "E: iwlist $iface scan failed: $!";
-	my @s = <$fh>;
-	chomp @s;
-	close $fh;
+	if (-x '/usr/bin/iw') {
+		open $fh, '-|', "/usr/bin/iw dev $iface scan"
+			or carp "E: iwlist $iface scan failed: $!";
+		my @s = <$fh>;
+		chomp @s;
+		close $fh;
 
-	my $l = 0;
-	my %w;
+		my $cells = 0;
+		$l = 0;
+		while (defined $s[$l]) {
+			$self->debug("| $l " . $s[$l]);
 
-	while (defined $s[$l]) {
-		$self->debug("| $l " . $s[$l]);
+			if ($s[$l] =~ m/^bss\s+([0-9A-F:]+)\s+.*/i) {
+				$c = sprintf("%02s", ++$cells);
+				$w{$c}{'bssid'} = $1;
 
-		if ($s[$l] =~ m/cell\s+(\d+)\s+-\s+address:\s+([0-9A-F:]+)/i) {
-			my $c = $1;
-			$w{$c}{'bssid'} = $2;
-
-			$self->debug("> $l " . $s[$l]);
-
-			while (defined $s[ ++$l ] and $c) {
 				$self->debug("> $l " . $s[$l]);
 
-				if ($s[$l] =~ m/\s*cell\s+\d+/i) {
-					$l--;
-					last;
+				while (defined $s[ ++$l ] and $c) {
+					$self->debug("> $l " . $s[$l]);
+
+					if ($s[$l] =~ m/^bss/i) {
+						$l--;
+						last;
+					}
+					elsif ($s[$l] =~ m/\s*freq:\s+(\d+)/i) {
+						$w{$c}{'freq'} = $1;
+					}
+					elsif ($s[$l] =~ m/^\s*ssid:\s+(.+)/i) {
+						$w{$c}{'ssid'} = $1;
+					}
+					elsif ($s[$l] =~ m/\s*ds paramater set:\s+.*channel\s+(\d+)/i) {
+						$w{$c}{'chan'} = $1;
+					}
+					elsif ($s[$l] =~ m/\s*wpa:/i or $s[$l] =~ m/\s*rsn:/i) {
+						$w{$c}{'enc'}++;
+						$w{$c}{'wpa'}++;
+					}
+					elsif ($s[$l] =~ m/^\s*signal:\s+(.+)\s+.*/i) {
+						$w{$c}{'signal'} = $1;
+					}
 				}
-				elsif ($s[$l] =~ m/^\s*essid:"(.+)"/i) {
-					$w{$c}{'ssid'} = $1;
-				}
-				elsif ($s[$l] =~ m/^\s*protocol:(ieee\s*)?(.+)/i) {
-					$w{$c}{'proto'} = $2;
-				}
-				elsif ($s[$l] =~ m/^\s*mode:([^\s]+)/i) {
-					$w{$c}{'mode'} = lc $1;
-				}
-				elsif ($s[$l] =~ m/\s*frequency:([^\s]+).*channel\s+(\d+)/i) {
-					$w{$c}{'freq'} = $1;
-					$w{$c}{'chan'} = $2;
-				}
-				elsif ($s[$l] =~ m/^\s*encryption key:([^\s]+)/i) {
-					$w{$c}{'enc'} = $1;
-				}
-				elsif ($s[$l] =~ m/wpa(2)? version/i) {
-					$w{$c}{'wpa'}++;
-				}
-				elsif ($s[$l] =~ m/^\s*quality=([^\s]+)/i) {
-					$w{$c}{'qual'} = $1;
+
+				if (not $w{$c}{'mode'}) {
+					$w{$c}{'mode'} = 'master';
 				}
 			}
 		}
-
+		continue {
+			$l++;
+		}
 	}
-	continue {
-		$l++;
+
+	if (not $l) {
+		open $fh, '-|', "/sbin/iwlist $iface scan"
+			or carp "E: iwlist $iface scan failed: $!";
+		@s = <$fh>;
+		chomp @s;
+		close $fh;
+
+		$l = 0;
+		while (defined $s[$l]) {
+			$self->debug("| $l " . $s[$l]);
+
+			if ($s[$l] =~ m/cell\s+(\d+)\s+-\s+address:\s+([0-9A-F:]+)/i) {
+				$c = $1;
+				$w{$c}{'bssid'} = $2;
+
+				$self->debug("> $l " . $s[$l]);
+
+				while (defined $s[ ++$l ] and $c) {
+					$self->debug("> $l " . $s[$l]);
+
+					if ($s[$l] =~ m/\s*cell\s+\d+/i) {
+						$l--;
+						last;
+					}
+					elsif ($s[$l] =~ m/^\s*essid:"(.+)"/i) {
+						$w{$c}{'ssid'} = $1;
+					}
+					elsif ($s[$l] =~ m/^\s*protocol:(ieee\s*)?(.+)/i) {
+						$w{$c}{'proto'} = $2;
+					}
+					elsif ($s[$l] =~ m/^\s*mode:([^\s]+)/i) {
+						$w{$c}{'mode'} = lc $1;
+					}
+					elsif ($s[$l] =~ m/\s*frequency:([^\s]+).*channel\s+(\d+)/i) {
+						$w{$c}{'freq'} = $1;
+						$w{$c}{'chan'} = $2;
+					}
+					elsif ($s[$l] =~ m/^\s*encryption key:\s*on/i) {
+						$w{$c}{'enc'}++;
+					}
+					elsif ($s[$l] =~ m/wpa(2)? version/i) {
+						$w{$c}{'wpa'}++;
+					}
+					elsif ($s[$l] =~ m/^\s*quality=([^\s]+)/i) {
+						$w{$c}{'signal'} = $1;
+					}
+				}
+			}
+		}
+		continue {
+			$l++;
+		}
 	}
 
 	$self->debug(\%w, 'w');

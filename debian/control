@@ -17,7 +17,7 @@ Depends: ${misc:Depends},
          libterm-readkey-perl,
          ifupdown,
          udev,
-         wireless-tools,
+         iw | wireless-tools,
          wpasupplicant
 Recommends: resolvconf
 Suggests: wpagui
