@@ -7,9 +7,9 @@ ceni (2.7) UNRELEASED; urgency=low
   * Add initial support for wireless scanning with iw.
 
   [ Stefan Lippers-Hollmann ]
-  * bump standards version to 3.8.2, no changes necessary.
+  * bump standards version to 3.8.3, no changes necessary.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 23 Jun 2009 01:57:14 +0200
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 22 Aug 2009 16:29:47 +0200
 
 ceni (2.5) unstable; urgency=low
 
