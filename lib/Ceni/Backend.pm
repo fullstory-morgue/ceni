@@ -428,7 +428,7 @@ sub iwlist_scan {
 
 	sleep 1;
 
-	if (-x '/usr/bin/iw') {
+	if (-x '/usr/sbin/iw' and 'feature' eq 'broken') {
 		open $fh, '-|', "/usr/bin/iw dev $iface scan"
 			or carp "E: iwlist $iface scan failed: $!";
 		my @s = <$fh>;

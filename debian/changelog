@@ -1,15 +1,15 @@
 ceni (2.7) UNRELEASED; urgency=low
 
   * NOT RELEASED YET
-  * DO NOT RELEASE!
 
   [ Kel Modderman ]
-  * Add initial support for wireless scanning with iw.
+  * Add initial support for wireless scanning with iw. Disable it for now.
+  * Use wpa_supplicant by default for any wireless link requiring encryption.
 
   [ Stefan Lippers-Hollmann ]
   * bump standards version to 3.8.3, no changes necessary.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 22 Aug 2009 16:29:47 +0200
+ -- Kel Modderman <kel@otaku42.de>  Thu, 10 Dec 2009 21:39:55 +1000
 
 ceni (2.5) unstable; urgency=low
 

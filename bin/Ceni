@@ -808,7 +808,7 @@ sub wifi_conf_form {
 			}
 			else {
 				if ($this->get() eq 'WPA') {
-					$w{'backend'}->set_selection(1);
+					$w{'backend'}->set_selection(0);
 					$w{'backend'}->focusable(0);
 				}
 
@@ -853,10 +853,10 @@ sub wifi_conf_form {
 		-height     => 5,
 		-border     => 1,
 		-bfg        => 'green',
-		-values     => [ 'wireless', 'wpa', ],
+		-values     => [ 'wpa', 'wireless', ],
 		-labels     => {
-			'wireless' => 'wireless-tools',
 			'wpa'      => 'wpa_supplicant',
+			'wireless' => 'wireless-tools',
 		},
 		-selected => 0,
 	);
@@ -1117,14 +1117,12 @@ sub wifi_conf_form {
 			}
 		}
 
-		if ($scan->{'enc'} eq 'on') {
+		if ($scan->{'enc'} eq 'on' or $scan->{'wpa'}) {
 			if ($scan->{'wpa'}) {
 				$w{'enc'}->set_selection(2);
-				$w{'backend'}->set_selection(1);
 			}
 			else {
 				$w{'enc'}->set_selection(1);
-				$w{'backend'}->set_selection(0);
 			}
 
 			if ($scan->{'ssid'}) {
