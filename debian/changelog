@@ -1,6 +1,4 @@
-ceni (2.7) UNRELEASED; urgency=low
-
-  * NOT RELEASED YET
+ceni (2.7) unstable; urgency=low
 
   [ Kel Modderman ]
   * Add initial support for wireless scanning with iw. Disable it for now.
