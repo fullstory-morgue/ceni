@@ -4,21 +4,21 @@ Priority: optional
 Maintainer: Kel Modderman <kel@otaku42.de>
 Uploaders: Stefan Lippers-Hollmann <s.l-h@gmx.de>
 Build-Depends: debhelper (>= 7)
-Build-Depends-Indep: perl (>= 5.6.0-16)
+Build-Depends-Indep: perl
 Vcs-Svn: svn://svn.berlios.de/fullstory/ceni/trunk
 Vcs-Browser: http://svn.berlios.de/wsvn/fullstory/ceni/trunk/
-Standards-Version: 3.8.3
+Standards-Version: 3.8.4
 
 Package: ceni
 Architecture: all
 Depends: ${misc:Depends},
-         ${perl:Depends},
-         libcurses-ui-perl,
-         libterm-readkey-perl,
-         ifupdown,
-         udev,
-         iw | wireless-tools,
-         wpasupplicant
+ ${perl:Depends},
+ libcurses-ui-perl,
+ libterm-readkey-perl,
+ ifupdown,
+ udev,
+ iw | wireless-tools,
+ wpasupplicant
 Recommends: resolvconf
 Suggests: wpagui
 Description: Curses interface to /etc/network/interfaces

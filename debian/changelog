@@ -1,8 +1,11 @@
-ceni (2.8) UNRELEASED; urgency=low
+ceni (2.8) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * bump standards version to 3.8.4, no changes necessary.
+  * update copyright years.
+  * add "Manufacturer" to device blacklist.
+  * condense whitespace in nicinfo.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 11 Dec 2009 02:56:08 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 26 Apr 2010 02:20:31 +0200
 
 ceni (2.7) unstable; urgency=low
 

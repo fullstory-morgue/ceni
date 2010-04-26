@@ -112,7 +112,10 @@ sub nic_info {
 		# FireWire IEEE 1394 Ethernet <- who cares?
 
 		if ($desc) {
-			$desc =~ s/(\s+)?(adapter|corporation|communications|connection|controller|ethernet|integrated|network|semiconductor|systems|technologies|technology|group|inc\.|ltd\.|co\.|\(.+\)),?//gi;
+			$desc =~ s/(\s+)?(adapter|corporation|communications|connection|controller|ethernet|integrated|manufacturer|network|semiconductor|systems|technologies|technology|group|inc\.|ltd\.|co\.|\(.+\)),?//gi;
+			$desc =~ s/\s+/\ /g;
+			$desc =~ s/^\s+//;
+			$desc =~ s/\s+$//;
 			$i{$if}{'desc'} = $desc;
 		}
 		else {
@@ -674,7 +677,7 @@ Kel Modderman, E<lt>kel@otaku42.deE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2007 by Kel Modderman
+Copyright (C) 2007 - 2010 by Kel Modderman
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
