@@ -108,6 +108,14 @@ sub nic_info {
 				$desc = "$prod1 $prod2";
 			}
 		}
+		elsif ($bus eq 'virtio') {
+			if (@{ $i{$if} }{ 'modalias' } eq 'virtio:d00000001v00001AF4') {
+				$desc = "Qumranet Virtio network device";
+			}
+			else {
+				$desc = "virtio_net";
+			}
+		}
 
 		# FireWire IEEE 1394 Ethernet <- who cares?
 
