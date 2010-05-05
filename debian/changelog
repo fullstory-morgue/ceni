@@ -1,3 +1,9 @@
+ceni (2.11) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed, 05 May 2010 03:21:47 +0200
+
 ceni (2.10) unstable; urgency=low
 
   * switch to dpkg-source 3.0 (native) format.
