@@ -59,14 +59,14 @@ ceni (2.5) unstable; urgency=low
 ceni (2.4) unstable; urgency=low
 
   * make lintian happy and depend on ${misc:Depends}.
-  * no longer conflict with configure-networkcard, ot's gone for long enough. 
+  * no longer conflict with configure-networkcard, ot's gone for long enough.
 
  -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 08 Dec 2008 21:17:55 +0100
 
 ceni (2.3) unstable; urgency=low
 
   [ Bernard Gray ]
-  * replace icon with a newie 
+  * replace icon with a newie
   * modify copyright to suit new icon
   * cleanup junk in icon svg, convert to plain svg
 
@@ -145,9 +145,9 @@ ceni (1.40) unstable; urgency=low
   * improve auto field (netmask/broadcast etc) filling with 10.0.0.0/8 support
   * style change for 10.0.0.0 auto field to suit better
   * add support for 172.0.0.0/16 support - strictly speaking, this should be /12
-  * add more logical behaviour to network add form 
+  * add more logical behaviour to network add form
     - clear text input fields when you type in them
-    - this only affects fields where it makes sense ie fields that require an 
+    - this only affects fields where it makes sense ie fields that require an
       ip address, not those that accept plaintext/hostnames for example
 
   [ Kel Modderman ]
@@ -194,10 +194,10 @@ ceni (1.35) unstable; urgency=low
 ceni (1.34) unstable; urgency=low
 
   [ Bernard Gray ]
-  * remember to add the wip icon this time :/ 
-  * clean up colouring of wip icon text 
-  * add a little doovalacka to make it a bit unique  
-  * remove clip and clone info from wip for kde3/4 compat 
+  * remember to add the wip icon this time :/
+  * clean up colouring of wip icon text
+  * add a little doovalacka to make it a bit unique
+  * remove clip and clone info from wip for kde3/4 compat
 
   [ Kel Modderman ]
   * Provide compatibility code for upcoming udevadm utility that replaces
