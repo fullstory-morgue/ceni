@@ -7,7 +7,7 @@ Build-Depends: debhelper (>= 7)
 Build-Depends-Indep: perl
 Vcs-Svn: svn://svn.berlios.de/fullstory/ceni/trunk
 Vcs-Browser: http://svn.berlios.de/wsvn/fullstory/ceni/trunk/
-Standards-Version: 3.8.4
+Standards-Version: 3.9.0
 
 Package: ceni
 Architecture: all
