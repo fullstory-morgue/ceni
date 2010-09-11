@@ -1,8 +1,9 @@
 ceni (2.11) unstable; urgency=low
 
   * bump standards version to 3.9.0, no changes necessary.
+  * embed the BSD license directly into debian/copyright.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 22 Jul 2010 01:10:09 +0200
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 22 Jul 2010 01:14:55 +0200
 
 ceni (2.10) unstable; urgency=low
 
