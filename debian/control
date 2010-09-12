@@ -14,10 +14,10 @@ Architecture: all
 Depends: ${misc:Depends},
  ${perl:Depends},
  libcurses-ui-perl,
+ libexpect-perl,
  libterm-readkey-perl,
  ifupdown,
  udev,
- iw | wireless-tools,
  wpasupplicant
 Recommends: resolvconf
 Suggests: wpagui

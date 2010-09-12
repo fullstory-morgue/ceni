@@ -16,6 +16,7 @@ use Ceni::Backend;
 
 use Curses::UI;
 use Getopt::Long;
+use File::Spec;
 use Term::ReadKey;
 
 #===============================================#
@@ -80,7 +81,7 @@ my $bend = new Ceni::Backend({ act => $act, debug => $dbg, file => $eni, });
 #===============================================#
 sub redirect_stderr {
 	open OLDERR, '>&', \*STDERR or die "E: Failed to dup STDERR to OLDERR: $!";
-	my $log = $dbg ? '/tmp/ceni.log' : '/dev/null';
+	my $log = $dbg ? '/tmp/ceni.log' : File::Spec->devnull;
 	open STDERR, '>', $log or die "E: Failed to redirect STDERR to $log: $!";
 }
 
@@ -390,36 +391,24 @@ sub wifi_or_wpas {
 
 sub wifi_scan {
 	$ceni->status('Scanning for wireless networks...');
-	$bend->iwlist_scan($iface);
+	$bend->wireless_scan($iface);
 	$ceni->nostatus();
 }
 
 sub wifi_scan_form {
 	my (@s, %s);
 
-	for my $c (sort { $a <=> $b } keys %{ $bend->get_iwlist_res() }) {
-		my $cell = $bend->get_iwlist_res($c);
+	for my $c (sort { $a <=> $b } keys %{ $bend->get_scan_res() }) {
+		my $cell = $bend->get_scan_res($c);
 
-		$s{$c} = "$c  ";
+		$s{$c} = join("   ", $c, $cell->{'bssid'},
+			      $cell->{'qual'} > 0 ?
+			      sprintf("%-3s", $cell->{'qual'}) : 
+			      sprintf("%-3s", $cell->{'level'}),
+			      $cell->{'ssid'} . " " .$cell->{'flags'});
 
-		if ($cell->{'mode'} ne 'master') {
-			$s{$c} .= sprintf "%-25s",
-			        '"' . $cell->{'ssid'} . '"' . " (" . $cell->{'mode'} . ")";
-		}
-		else {
-			$s{$c} .= sprintf "%-25s", '"' . $cell->{'ssid'} . '"';
-		}
-
-		$s{$c} .= sprintf "%-14s", "Signal: " . $cell->{'signal'};
-
-		if ($cell->{'enc'}) {
-			$s{$c} .= $cell->{'wpa'} ? " Enc: WPA " : " Enc: WEP ";
-		}
-		else {
-			$s{$c} .= " Enc: OPEN";
-		}
-
-		$s{$c} .= ' ' . $cell->{'bssid'};
+		$s{$c} =~ s/\[ESS\]//;
+		$s{$c} =~ s/\[WPS\]//;
 
 		push @s, $c;
 	}
@@ -436,8 +425,19 @@ sub wifi_scan_form {
 		'wireless_ssid_title', 'TextEntry',
 		-text      => 'Choose a wireless network:',
 		-border    => 0,
-		-x         => 3,
-		-y         => 2,
+		-x         => 2,
+		-y         => 1,
+		-width     => 75,
+		-focusable => 0,
+		-readonly  => 1,
+	);
+
+	$wifi_scan_form->add(
+		'wireless_bss_text', 'TextEntry',
+		-text      => ' #   BSSID               SIG   ESSID [FLAGS]',
+		-border    => 0,
+		-x         => 2,
+		-y         => 3,
 		-width     => 75,
 		-focusable => 0,
 		-readonly  => 1,
@@ -492,7 +492,7 @@ sub wifi_scan_form {
 		-buttons => [ {
 				-label   => '[  Skip  ]',
 				-onpress => sub {
-					$wcell = 'none';
+					$wcell = 'SKIP';
 					shift->parent->lose_focus();
 				}
 			}, ],
@@ -524,7 +524,6 @@ sub wifi_scan_form {
 
 sub wpas_conf_form {
 	my $current = $bend->get_iface_conf($iface);
-	my @drivers = $bend->wpa_drivers();
 	my %w;
 
 	my $wpas_conf_form = $ceni->add(
@@ -535,23 +534,6 @@ sub wpas_conf_form {
 		-tfg    => 'green',
 	);
 
-	$w{'wpa-driver'} = $wpas_conf_form->add(
-		'wpas_driver_list',
-		'Listbox',
-		-title      => 'WPA Driver',
-		-radio      => 1,
-		-wraparound => 1,
-		-ipadleft   => 2,
-		-x          => 1,
-		-y          => 1,
-		-width      => 22,
-		-height     => 5,
-		-border     => 1,
-		-bfg        => 'green',
-		-values     => \@drivers,
-		-selected   => 0,
-	);
-
 	$w{'wpa-debug-level'} = $wpas_conf_form->add(
 		'wpas_log_list',
 		'Listbox',
@@ -559,9 +541,9 @@ sub wpas_conf_form {
 		-radio      => 1,
 		-wraparound => 1,
 		-ipadleft   => 2,
-		-x          => 23,
+		-x          => 1,
 		-y          => 1,
-		-width      => 22,
+		-width      => 32,
 		-height     => 5,
 		-border     => 1,
 		-bfg        => 'green',
@@ -581,9 +563,9 @@ sub wpas_conf_form {
 		-radio      => 1,
 		-wraparound => 1,
 		-ipadleft   => 2,
-		-x          => 45,
+		-x          => 33,
 		-y          => 1,
-		-width      => 30,
+		-width      => 32,
 		-height     => 5,
 		-border     => 1,
 		-bfg        => 'green',
@@ -756,7 +738,7 @@ sub wpas_conf_form {
 		$conf{'class'}  = $w{'class'}->get();
 		$conf{'method'} = 'manual';
 
-		for ('wpa-driver', 'wpa-roam', 'wpa-debug-level') {
+		for ('wpa-roam', 'wpa-debug-level') {
 			if ($w{$_} and $w{$_}->get()) {
 				$conf{'stanza'}{$_} = $w{$_}->get();
 			}
@@ -771,7 +753,7 @@ sub wpas_conf_form {
 
 sub wifi_conf_form {
 	my $info = $bend->get_iface_info($iface);
-	my $scan = $bend->get_iwlist_res($wcell);
+	my $scan = $bend->get_scan_res($wcell);
 	my %w;
 
 	my $wifi_conf_form = $ceni->add(
@@ -791,7 +773,7 @@ sub wifi_conf_form {
 		-ipadleft   => 2,
 		-x          => 1,
 		-y          => 1,
-		-width      => 22,
+		-width      => 28,
 		-height     => 5,
 		-border     => 1,
 		-bfg        => 'green',
@@ -807,11 +789,6 @@ sub wifi_conf_form {
 				}
 			}
 			else {
-				if ($this->get() eq 'WPA') {
-					$w{'backend'}->set_selection(0);
-					$w{'backend'}->focusable(0);
-				}
-
 				for ('stdin', 'clear') {
 					$w{$_}->set_color_bfg('blue');
 					$w{$_}->focusable(1);
@@ -830,35 +807,14 @@ sub wifi_conf_form {
 		-radio      => 1,
 		-wraparound => 1,
 		-ipadleft   => 2,
-		-x          => 23,
+		-x          => 29,
 		-y          => 1,
-		-width      => 22,
+		-width      => 28,
 		-height     => 5,
 		-border     => 1,
 		-bfg        => 'green',
-		-values     => [ 'managed', 'ad-hoc', ],
+		-values     => [ 'managed', 'ad-hoc', 'master', ],
 		-selected   => 0,
-	);
-
-	$w{'backend'} = $wifi_conf_form->add(
-		'backend_list',
-		'Listbox',
-		-title      => 'Configuration Backend',
-		-radio      => 1,
-		-wraparound => 1,
-		-ipadleft   => 2,
-		-x          => 45,
-		-y          => 1,
-		-width      => 30,
-		-height     => 5,
-		-border     => 1,
-		-bfg        => 'green',
-		-values     => [ 'wpa', 'wireless', ],
-		-labels     => {
-			'wpa'      => 'wpa_supplicant',
-			'wireless' => 'wireless-tools',
-		},
-		-selected => 0,
 	);
 
 	$w{'ssid'} = $wifi_conf_form->add(
@@ -1098,7 +1054,7 @@ sub wifi_conf_form {
 			}, ],
 	);
 
-	if ($wcell and $wcell ne 'none') {
+	if (defined $wcell and $wcell ne 'SKIP') {
 		if ($scan->{'ssid'}) {
 			if ($scan->{'ssid'} =~ m/^(any|on|off)$/i) {
 				$w{'ssid'}->text('-- ' . $scan->{'ssid'});
@@ -1117,11 +1073,11 @@ sub wifi_conf_form {
 			}
 		}
 
-		if ($scan->{'enc'} eq 'on' or $scan->{'wpa'}) {
-			if ($scan->{'wpa'}) {
+		if ($scan->{'flags'}) {
+			if ($scan->{'flags'} =~ /WPA/) {
 				$w{'enc'}->set_selection(2);
 			}
-			else {
+			elsif ($scan->{'flags'} =~ /WEP/) {
 				$w{'enc'}->set_selection(1);
 			}
 
@@ -1130,14 +1086,12 @@ sub wifi_conf_form {
 			}
 		}
 
-		if ($scan->{'mode'}) {
-			if ($scan->{'mode'} eq 'master') {
-				$w{'mode'}->set_selection(0);
-			}
-			elsif ($scan->{'mode'} eq 'ad-hoc') {
-				$w{'mode'}->set_selection(1);
-			}
-		}
+		# FIXME: determine ad-hoc mode from wpa_supplicant scan data
+		#if ($scan->{'mode'}) {
+		#	if ($scan->{'mode'} eq 'ad-hoc') {
+		#		$w{'mode'}->set_selection(1);
+		#	}
+		#}
 
 		if ($scan->{'bssid'}) {
 			$w{'bssid'}->text($scan->{'bssid'});
@@ -1145,78 +1099,47 @@ sub wifi_conf_form {
 		}
 	}
 	else {
-		$w{'backend'}->focus();
+		$w{'confirm'}->focus();
 	}
 
 	$wifi_conf_form->set_binding(sub { exit 1; }, "\cC", "\cQ");
 	$wifi_conf_form->modalfocus();
 	$ceni->delete('wifi_conf_form');
 
-	if ($w{'mode'}->get() ne 'managed') {
-		if ($info->{'drivers'} eq 'ath_pci') {
-			$conf{'stanza'}{'madwifi-mode'} = $w{'mode'}->get();
-		}
-		else {
-			$conf{'stanza'}{'wireless-mode'} = $w{'mode'}->get();
-		}
+	if ($w{'mode'}->get() eq 'ad-hoc') {
+		$conf{'stanza'}{'wpa-mode'} = '1';
+	}
+	elsif ($w{'mode'}->get() eq 'master') {
+		$conf{'stanza'}{'wpa-mode'} = '2';
 	}
 
-	if ($w{'backend'}->get() eq 'wireless') {
-		if ($w{'ssid'}->get()) {
-			$conf{'stanza'}{'wireless-essid'} = $w{'ssid'}->get();
-		}
-		else {
-			$conf{'stanza'}{'wireless-essid'} = "any";
-		}
+	if ($w{'ssid'}->get()) {
+		$conf{'stanza'}{'wpa-ssid'} = $w{'ssid'}->get();
+	}
 
-		if ($w{'psk'}->get()) {
-			my $psk     = $w{'psk'}->get();
-			my $psk_len = length $psk;
+	if ($w{'bssid'}->get and $w{'force_bssid'}->get()) {
+		$conf{'stanza'}{'wpa-bssid'} = $w{'bssid'}->get();
+	}
 
-			if (is_hex($psk) and $psk_len =~ m/^(10|26|32|58)$/) {
-				$conf{'stanza'}{'wireless-key'} = $psk;
-			}
-			elsif ($psk !~ /^s:/) {
-				$conf{'stanza'}{'wireless-key'} = "s:" . $psk;
-			}
-			else {
-				$conf{'stanza'}{'wireless-key'} = $psk;
-			}
-		}
+	if ($w{'hidden_ssid'}->get()) {
+		$conf{'stanza'}{'wpa-scan-ssid'} = '1';
+		$conf{'stanza'}{'wpa-ap-scan'}   = '1';
+	}
 
-		if ($w{'bssid'}->get and $w{'force_bssid'}->get()) {
-			$conf{'stanza'}{'wireless-ap'} = $w{'bssid'}->get();
+	if ($w{'enc'}->get() =~ /^(None|WEP)$/) {
+		$conf{'stanza'}{'wpa-key-mgmt'} = 'NONE';
+
+		if ($w{'enc'}->get() eq 'WEP') {
+			$conf{'stanza'}{'wpa-wep-key0'}      = $w{'psk'}->get();
+			$conf{'stanza'}{'wpa-wep-tx-keyidx'} = '0';
+
+			if ($conf{'stanza'}{'wpa-wep-key0'} =~ m/^-- (any|on|off)$/) {
+				$conf{'stanza'}{'wpa-wep-key0'} =~ s/^--\s+//;
+			}
 		}
 	}
 	else {
-		if ($w{'ssid'}->get()) {
-			$conf{'stanza'}{'wpa-ssid'} = $w{'ssid'}->get();
-		}
-
-		if ($w{'bssid'}->get and $w{'force_bssid'}->get()) {
-			$conf{'stanza'}{'wpa-bssid'} = $w{'bssid'}->get();
-		}
-
-		if ($w{'hidden_ssid'}->get()) {
-			$conf{'stanza'}{'wpa-scan-ssid'} = '1';
-			$conf{'stanza'}{'wpa-ap-scan'}   = '1';
-		}
-
-		if ($w{'enc'}->get() =~ /^(None|WEP)$/) {
-			$conf{'stanza'}{'wpa-key-mgmt'} = 'NONE';
-
-			if ($w{'enc'}->get() eq 'WEP') {
-				$conf{'stanza'}{'wpa-wep-key0'}      = $w{'psk'}->get();
-				$conf{'stanza'}{'wpa-wep-tx-keyidx'} = '0';
-
-				if ($conf{'stanza'}{'wpa-wep-key0'} =~ m/^-- (any|on|off)$/) {
-					$conf{'stanza'}{'wpa-wep-key0'} =~ s/^--\s+//;
-				}
-			}
-		}
-		else {
-			$conf{'stanza'}{'wpa-psk'} = $w{'psk'}->get();
-		}
+		$conf{'stanza'}{'wpa-psk'} = $w{'psk'}->get();
 	}
 }
 

@@ -5,6 +5,7 @@ use warnings;
 
 use Carp;
 use Data::Dumper;
+use Expect;
 use Fcntl 'O_RDONLY';
 use Tie::File;
 
@@ -30,7 +31,7 @@ sub is_iface_wireless {
 	if (-d "/sys/class/net/$iface/phy80211") {
 		$retval++;
 	}
-	else {
+	elsif (-x "/sbin/iwgetid") {
 		open my $iwgetid, '-|', "/sbin/iwgetid --protocol " . $iface
 		        or carp "W: could not execute iwgetid --protocol $iface: $!";
 		while (<$iwgetid>) {
@@ -415,18 +416,29 @@ sub ifstate {
 	return undef;
 }
 
-sub iwlist_scan {
+sub wireless_scan {
 	my ($self, $iface) = (shift, shift);
-	my ($ret, $cmd, $fh, @s, $c, $l, %w);
+	my ($wpacli, $ret, $cmd, %scan, @ver, $driver);
+	my ($wpasup_pid_fh, $wpasup_pid);
 
-	if (-x '/bin/ip') {
-		$cmd = "/bin/ip link set $iface up";
-	}
-	else {
-		$cmd = "/sbin/ifconfig $iface up";
-	}
+	#return 1 unless $self->{'act'};
 
-	$ret = $self->{'act'} ? system($cmd) : 0;
+	# Recent versions of wpa_supplicant support cycling through driver
+	# wrappers until one succeeds, so try nl80211 first and fallback to
+	# wext.
+	@ver = split(/\./, `/sbin/wpa_supplicant -v | sed -n "s/^wpa_supplicant v//p"`);
+	$driver = ($ver[0] == 0 and $ver[1] <= 6) ? 'wext' : 'nl80211,wext';
+
+	# Spawn an unconfigured wpa_supplicant process to prepare the
+	# interface for scanning. Using the background (-B) option ensures
+	# return value indicates if the interface was successfully setup
+	# (or not). The use of system(), however, means we must also determine
+	# the process id from a pid file.
+	$cmd = "/sbin/wpa_supplicant -B -i $iface -D $driver " .
+	       "-P /var/run/wpa_supplicant.$iface.pid " .
+	       "-C /var/run/wpa_supplicant";
+
+	$ret = system($cmd);
 
 	if ($ret != 0) {
 		if (($? & 127) == 2) {
@@ -437,130 +449,71 @@ sub iwlist_scan {
 		}
 	}
 
-	sleep 1;
+	# Grab the wpa_supplicant process id from pid file. We have to wait
+	# for it to be created ... a bit sloppy.
+	sleep 1 until -s "/var/run/wpa_supplicant.$iface.pid";
+	open $wpasup_pid_fh, '<', "/var/run/wpa_supplicant.$iface.pid"
+		or carp "W: failed to open /var/run/wpa_supplicant.$iface.pid: $!";
+	$wpasup_pid = <$wpasup_pid_fh>;
+	close $wpasup_pid_fh;
+	chomp $wpasup_pid;
 
-	if (-x '/usr/sbin/iw' and 'feature' eq 'broken') {
-		open $fh, '-|', "/usr/bin/iw dev $iface scan"
-			or carp "E: iwlist $iface scan failed: $!";
-		my @s = <$fh>;
-		chomp @s;
-		close $fh;
+	# Start wpa_cli interactive session and communicate with it via Expect
+	$wpacli = new Expect;
+	$wpacli->raw_pty(1);
+	$wpacli->log_stdout(0);
+	$wpacli->log_file("/tmp/ceni.wpacli.log", "w") if $self->{'debug'};
+	$wpacli->spawn("/sbin/wpa_cli", "-i", $iface);
 
-		my $cells = 0;
-		$l = 0;
-		while (defined $s[$l]) {
-			$self->debug("| $l " . $s[$l]);
+	# Trigger a scan and wait for scan result notification for up to 30s
+	$wpacli->send("SCAN\n");
+	$wpacli->expect(30, -re => ".*CTRL-EVENT-SCAN-RESULTS");
 
-			if ($s[$l] =~ m/^bss\s+([0-9A-F:]+)\s+.*/i) {
-				$c = sprintf("%02s", ++$cells);
-				$w{$c}{'bssid'} = $1;
+	# Gather scan data per BSS
+	for my $bss (0..100) {
+		my ($reply, %data);
 
-				$self->debug("> $l " . $s[$l]);
+		# Clear previously accumulated output
+		$wpacli->clear_accum();
 
-				while (defined $s[ ++$l ] and $c) {
-					$self->debug("> $l " . $s[$l]);
+		# Request BSS data
+		$wpacli->send("BSS $bss\n");
+		$wpacli->expect(1, -re => "^>");
 
-					if ($s[$l] =~ m/^bss/i) {
-						$l--;
-						last;
-					}
-					elsif ($s[$l] =~ m/\s*freq:\s+(\d+)/i) {
-						$w{$c}{'freq'} = $1;
-					}
-					elsif ($s[$l] =~ m/^\s*ssid:\s+(.+)/i) {
-						$w{$c}{'ssid'} = $1;
-					}
-					elsif ($s[$l] =~ m/\s*ds paramater set:\s+.*channel\s+(\d+)/i) {
-						$w{$c}{'chan'} = $1;
-					}
-					elsif ($s[$l] =~ m/\s*wpa:/i or $s[$l] =~ m/\s*rsn:/i) {
-						$w{$c}{'enc'}++;
-						$w{$c}{'wpa'}++;
-					}
-					elsif ($s[$l] =~ m/^\s*signal:\s+(.+)\s+.*/i) {
-						$w{$c}{'signal'} = $1;
-					}
-				}
+		# Process reply
+		$reply = $wpacli->exp_before();
+		last if length($reply) == 0;
 
-				if (not $w{$c}{'mode'}) {
-					$w{$c}{'mode'} = 'master';
-				}
-			}
+		for (split "\n", $reply) {
+			next unless m/=/;
+			my ($key, undef) = split(/=/);
+			my $val = substr($_, length($key) + 1);
+			$data{$key} = $val;
 		}
-		continue {
-			$l++;
-		}
+		$scan{sprintf "%02d", $bss} = \%data;
 	}
 
-	if (not $l) {
-		open $fh, '-|', "/sbin/iwlist $iface scan"
-			or carp "E: iwlist $iface scan failed: $!";
-		@s = <$fh>;
-		chomp @s;
-		close $fh;
+	# Kill wpa_cli process
+	$wpacli->hard_close();
 
-		$l = 0;
-		while (defined $s[$l]) {
-			$self->debug("| $l " . $s[$l]);
+	# Kill wpa_supplicant process.
+	kill 'TERM', $wpasup_pid;
 
-			if ($s[$l] =~ m/cell\s+(\d+)\s+-\s+address:\s+([0-9A-F:]+)/i) {
-				$c = $1;
-				$w{$c}{'bssid'} = $2;
+	$self->debug(\%scan, 'scan');
 
-				$self->debug("> $l " . $s[$l]);
-
-				while (defined $s[ ++$l ] and $c) {
-					$self->debug("> $l " . $s[$l]);
-
-					if ($s[$l] =~ m/\s*cell\s+\d+/i) {
-						$l--;
-						last;
-					}
-					elsif ($s[$l] =~ m/^\s*essid:"(.+)"/i) {
-						$w{$c}{'ssid'} = $1;
-					}
-					elsif ($s[$l] =~ m/^\s*protocol:(ieee\s*)?(.+)/i) {
-						$w{$c}{'proto'} = $2;
-					}
-					elsif ($s[$l] =~ m/^\s*mode:([^\s]+)/i) {
-						$w{$c}{'mode'} = lc $1;
-					}
-					elsif ($s[$l] =~ m/\s*frequency:([^\s]+).*channel\s+(\d+)/i) {
-						$w{$c}{'freq'} = $1;
-						$w{$c}{'chan'} = $2;
-					}
-					elsif ($s[$l] =~ m/^\s*encryption key:\s*on/i) {
-						$w{$c}{'enc'}++;
-					}
-					elsif ($s[$l] =~ m/wpa(2)? version/i) {
-						$w{$c}{'wpa'}++;
-					}
-					elsif ($s[$l] =~ m/^\s*quality=([^\s]+)/i) {
-						$w{$c}{'signal'} = $1;
-					}
-				}
-			}
-		}
-		continue {
-			$l++;
-		}
-	}
-
-	$self->debug(\%w, 'w');
-
-	%{ $self->{'_data'}->{'iwlist'} } = %w;
+	%{ $self->{'_data'}->{'scan'} } = %scan;
 
 	return 1;
 }
 
-sub get_iwlist_res {
+sub get_scan_res {
 	my ($self, $cell) = (shift, shift);
 
-	if ($cell and $self->{'_data'}->{'iwlist'}->{$cell}) {
-		return $self->{'_data'}->{'iwlist'}->{$cell};
+	if (defined $cell and $self->{'_data'}->{'scan'}->{$cell}) {
+		return $self->{'_data'}->{'scan'}->{$cell};
 	}
-	elsif ($self->{'_data'}->{'iwlist'}) {
-		return $self->{'_data'}->{'iwlist'};
+	elsif ($self->{'_data'}->{'scan'}) {
+		return $self->{'_data'}->{'scan'};
 	}
 
 	return undef;
@@ -579,27 +532,6 @@ sub wpa_action {
 	}
 
 	return $ret;
-}
-
-sub wpa_drivers {
-	my $self = shift;
-	my ($d, @drivers);
-
-	open my $wpas, '-|', 'wpa_supplicant -h'
-		or carp "W: unable to get driver list from wpa_supplicant: $!";
-	while (<$wpas>) {
-		chomp;
-		/^drivers:/ and $d++;
-		/^options:/ and last;
-		if ($d and m/\s+([^\s]+)\s+=\s+(.*)$/) {
-			if ($1 and $1 ne 'wired') {
-				push @drivers, $1;
-			}
-		}
-	}
-	close $wpas;
-
-	return @drivers;
 }
 
 sub wpa_mappings {

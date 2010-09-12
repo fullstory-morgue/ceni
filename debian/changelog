@@ -1,8 +1,16 @@
 ceni (2.14) UNRELEASED; urgency=low
 
-  * NOT RELEASED YET
+  * EXPERIMENTAL - requires internal testing.
+  * Remove any need or option for wireless-tools, and use wpasupplicant for
+    scanning and as sole configuration backend for wifi.
+  * Depend in libexpect-perl to use Expect module for communicating with
+    interactive wpa_cli process.
+  * Misc cleanups/bugfixes.
+  * No longer install Ceni_{read,write}_config, no-one uses them ttbomk.
+  * Add bin/wpa_cli_scan.pl: test script for collecting scan data from
+    wpa_supplicant/wpa_cli.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 08 Aug 2010 03:28:42 +0200
+ -- Kel Modderman <kel@otaku42.de>  Sun, 12 Sep 2010 20:41:26 +1000
 
 ceni (2.13) unstable; urgency=low
 
