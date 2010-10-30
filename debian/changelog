@@ -1,6 +1,11 @@
-ceni (2.14) UNRELEASED; urgency=low
+ceni (2.21) unstable; urgency=low
 
-  * EXPERIMENTAL - requires internal testing.
+  * add libexpect-perl to Build-Depends-Indep.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 30 Oct 2010 16:38:30 +0200
+
+ceni (2.20) unstable; urgency=low
+
   * Remove any need or option for wireless-tools, and use wpasupplicant for
     scanning and as sole configuration backend for wifi.
   * Depend in libexpect-perl to use Expect module for communicating with
