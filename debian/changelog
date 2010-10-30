@@ -1,6 +1,5 @@
-ceni (2.14) UNRELEASED; urgency=low
+ceni (2.20) unstable; urgency=low
 
-  * EXPERIMENTAL - requires internal testing.
   * Remove any need or option for wireless-tools, and use wpasupplicant for
     scanning and as sole configuration backend for wifi.
   * Depend in libexpect-perl to use Expect module for communicating with
