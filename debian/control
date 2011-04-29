@@ -8,7 +8,7 @@ Build-Depends-Indep: perl,
  libexpect-perl
 Vcs-Svn: svn://svn.berlios.de/fullstory/ceni/trunk
 Vcs-Browser: http://svn.berlios.de/wsvn/fullstory/ceni/trunk/
-Standards-Version: 3.9.1
+Standards-Version: 3.9.2
 
 Package: ceni
 Architecture: all
