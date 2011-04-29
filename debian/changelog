@@ -1,3 +1,9 @@
+ceni (2.23) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 29 Apr 2011 04:05:04 +0200
+
 ceni (2.22) unstable; urgency=low
 
   * bump standards version to 3.9.2, no changes necessary.
