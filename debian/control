@@ -2,7 +2,8 @@ Source: ceni
 Section: net
 Priority: optional
 Maintainer: Kel Modderman <kel@otaku42.de>
-Uploaders: Stefan Lippers-Hollmann <s.l-h@gmx.de>
+Uploaders: Stefan Lippers-Hollmann <s.l-h@gmx.de>,
+ Joaquim Boura <x-un-i@berlios.de>
 Build-Depends: debhelper (>= 8)
 Build-Depends-Indep: perl,
  libexpect-perl
