@@ -1,10 +1,6 @@
-ceni (2.23) UNRELEASED; urgency=low
+ceni (2.23) unstable; urgency=low
 
-  [ Stefan Lippers-Hollmann ]
-  * NOT RELEASED YET
-
-  [ Joaquim Boura ]
-  * fixing some noise
+  * fixing some noise.
 
  -- Joaquim Boura <x-un-i@berlios.de>  Tue, 17 May 2011 23:15:53 +0200
 
