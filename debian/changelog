@@ -1,8 +1,8 @@
-ceni (2.24) UNRELEASED; urgency=low
+ceni (2.24) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * switch to compat level 9.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 19 May 2011 02:43:10 +0200
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 16 Jan 2012 00:37:48 +0100
 
 ceni (2.23) unstable; urgency=low
 
