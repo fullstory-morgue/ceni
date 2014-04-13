@@ -2,8 +2,9 @@ ceni (2.27) unstable; urgency=low
 
   * bump standards version to 3.9.5, no changes necessary.
   * debian/control: switch Vcs tags to github.
+  * add keywords entry to the XDG menu files.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 13 Apr 2014 21:02:18 +0200
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 13 Apr 2014 21:05:08 +0200
 
 ceni (2.26) unstable; urgency=low
 

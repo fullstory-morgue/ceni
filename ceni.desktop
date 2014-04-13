@@ -10,3 +10,4 @@ GenericName[ru]=Конфигурация сетового адаптера
 GenericName[es]=Configuración de la tarjeta de red
 GenericName[pt]=Configuração da placa de rede
 Categories=Network;
+Keywords=Net;Network;Configuration;interfaces;ifupdown;
