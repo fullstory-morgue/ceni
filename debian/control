@@ -7,9 +7,9 @@ Uploaders: Stefan Lippers-Hollmann <s.l-h@gmx.de>,
 Build-Depends: debhelper (>= 9.20120115)
 Build-Depends-Indep: perl,
  libexpect-perl
-Vcs-Svn: svn://svn.berlios.de/fullstory/ceni/trunk
-Vcs-Browser: http://svn.berlios.de/wsvn/fullstory/ceni/trunk/
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
+Vcs-git: git://github.com/fullstory/ceni.git
+Vcs-Browser: https://github.com/fullstory/ceni
 
 Package: ceni
 Architecture: all
