@@ -25,14 +25,14 @@ $iface or die("iface must be first arg\n");
 my @ver = split(/\./, `/sbin/wpa_supplicant -v | sed -n "s/^wpa_supplicant v//p"`);
 my $driver = ($ver[0] == 0 and $ver[1] <= 6) ? 'wext' : 'nl80211,wext';
 system("/sbin/wpa_supplicant -B -i $iface -D $driver " .
-       "-P /var/run/wpa_supplicant.$iface.pid " .
-       "-C /var/run/wpa_supplicant") == 0
+       "-P /run/wpa_supplicant.$iface.pid " .
+       "-C /run/wpa_supplicant") == 0
 	or die($!);
 
 # Grab the wpa_supplicant process id from pid file. We may have to wait for it
 # to be created though...
-sleep 1 until -f "/var/run/wpa_supplicant.$iface.pid";
-open my $wpasup_pid_fh, '<', "/var/run/wpa_supplicant.$iface.pid" or die($!);
+sleep 1 until -f "/run/wpa_supplicant.$iface.pid";
+open my $wpasup_pid_fh, '<', "/run/wpa_supplicant.$iface.pid" or die($!);
 my $wpasup_pid = <$wpasup_pid_fh>;
 close $wpasup_pid_fh;
 chomp $wpasup_pid;

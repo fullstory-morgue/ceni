@@ -430,8 +430,8 @@ sub wireless_scan {
 	# (or not). The use of system(), however, means we must also determine
 	# the process id from a pid file.
 	$cmd = "/sbin/wpa_supplicant -B -i $iface -D $driver " .
-	       "-P /var/run/wpa_supplicant.$iface.pid " .
-	       "-C /var/run/wpa_supplicant";
+	       "-P /run/wpa_supplicant.$iface.pid " .
+	       "-C /run/wpa_supplicant";
 
 	$ret = system($cmd);
 
@@ -446,9 +446,9 @@ sub wireless_scan {
 
 	# Grab the wpa_supplicant process id from pid file. We have to wait
 	# for it to be created ... a bit sloppy.
-	sleep 1 until -s "/var/run/wpa_supplicant.$iface.pid";
-	open $wpasup_pid_fh, '<', "/var/run/wpa_supplicant.$iface.pid"
-		or carp "W: failed to open /var/run/wpa_supplicant.$iface.pid: $!";
+	sleep 1 until -s "/run/wpa_supplicant.$iface.pid";
+	open $wpasup_pid_fh, '<', "/run/wpa_supplicant.$iface.pid"
+		or carp "W: failed to open /run/wpa_supplicant.$iface.pid: $!";
 	$wpasup_pid = <$wpasup_pid_fh>;
 	close $wpasup_pid_fh;
 	chomp $wpasup_pid;
