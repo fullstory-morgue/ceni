@@ -1,3 +1,9 @@
+ceni (2.29) UNRELEASED; urgency=medium
+
+  * NOT RELEASED YET
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 08 Aug 2014 05:24:18 +0200
+
 ceni (2.28) unstable; urgency=medium
 
   * run migration for wpa_supplicant, this relies on initscripts providing the
