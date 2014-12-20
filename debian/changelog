@@ -1,8 +1,16 @@
 ceni (2.29) UNRELEASED; urgency=medium
 
+  [ Stefan Lippers-Hollmann ]
   * NOT RELEASED YET
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 08 Aug 2014 05:24:18 +0200
+  [ Niall Walsh ]
+  * try to provide some sane transfer away from "live" networkd
+    - take /etc/systemd/network/$iface.network as $iface is configured live
+    - flush ips if we choose to reconfigure it
+    - remove .network when writing $iface to /e/n/i or deconfiguring
+    - copy resolved's resolv.conf to /etc when removing only networkd network
+
+ -- Niall Walsh <niallwalsh@celtux.org>  Sat, 20 Dec 2014 16:58:44 +0000
 
 ceni (2.28) unstable; urgency=medium
 
