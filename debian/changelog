@@ -1,9 +1,5 @@
-ceni (2.29) UNRELEASED; urgency=medium
+ceni (2.29) unstable; urgency=medium
 
-  [ Stefan Lippers-Hollmann ]
-  * NOT RELEASED YET
-
-  [ Niall Walsh ]
   * try to provide some sane transfer away from "live" networkd
     - take /etc/systemd/network/$iface.network as $iface is configured live
     - flush ips if we choose to reconfigure it
