@@ -1,9 +1,9 @@
-ceni (2.30) UNRELEASED; urgency=medium
+ceni (2.30) unstable; urgency=medium
 
-  * NOT RELEASED YET
   * bump standards version to 3.9.6, no changes necessary.
+  * convert to machine readable copyright.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 20 Dec 2014 22:33:40 +0100
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 03 Jan 2015 18:46:01 +0100
 
 ceni (2.29) unstable; urgency=medium
 
