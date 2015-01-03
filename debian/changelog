@@ -1,6 +1,7 @@
 ceni (2.30) UNRELEASED; urgency=medium
 
   * NOT RELEASED YET
+  * bump standards version to 3.9.6, no changes necessary.
 
  -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 20 Dec 2014 22:33:40 +0100
 
