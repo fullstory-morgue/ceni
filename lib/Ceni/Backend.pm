@@ -66,6 +66,8 @@ sub nic_info {
 			$self->debug($_);
 			if (m/^\s+([A-Z]+({(.+)})?)=="([^"]+)"$/) {
 				$3 ? $i{$if}{ lc $3 } ||= $4 : $i{$if}{ lc $1 } ||= $4;
+				# ssb first KERNELS is useless to us, we want the second
+				($1 eq 'KERNELS')&&($4=~/^ssb/)&&(delete($i{$if}{'kernels'}));
 			}
 		}
 		close $udevinfo;
@@ -80,33 +82,43 @@ sub nic_info {
 			next;
 		}
 
-		if ($bus eq 'pci' or $bus eq 'ssb') {
-			my ($vendor, $device) = @{ $i{$if} }{ 'vendor', 'device' };
+		open $udevinfo, '-|', "$udevinfo_cmd -p " . $i{$if}{'sysfs'}
+		        or carp "E: could not execute $udevinfo_cmd -p "
+		        . $i{$if}{'sysfs'} . ": $!";
+		while (<$udevinfo>) {
+			chomp;
+			$self->debug($_);
+			s/^[A-Z]\:\s//;
+			if (m/^([A-Z_]+)=(.+?)$/) {
+				$i{$if}{ lc $1 } ||= $2;
+			}
+		}
+		close $udevinfo;
 
-			$desc = `lspci -d $vendor:$device 2>/dev/null | head -n1`;
-			$desc ||= "PCI device $vendor:$device";
+		if (-e $i{$if}{'sysfs'}."/address") {
+			open my $sysinfo, $i{$if}{'sysfs'}."/address"
+			or carp "E: could not open ".$i{$if}{'sysfs'}."/address: $!";
+			my $address=<$sysinfo>;
+			close($sysinfo);
+			chomp($address);
+			$i{$if}{'address'}=$address;
+		}
+
+		if ($bus eq 'pci' or $bus eq 'ssb') {
+			$desc = `lspci -s $i{$if}{'kernels'} 2>/dev/null | head -n1`;
+			$desc ||= "PCI device ".$i{$if}{'kernels'};
 
 			chomp($desc);
 			$desc =~ s/^.+:\s+//;
 		}
-		elsif ($bus eq 'usb') {
-			my ($manu, $prod) = @{ $i{$if} }{ 'manufacturer', 'product' };
+		elsif ($bus eq 'usb' or $bus eq 'pcmcia') {
+			my ($manu, $prod) = @{ $i{$if} }{ 'id_vendor_from_database', 'id_model_from_database' };
 
 			if ($manu =~ m/^linux/i or $prod =~ m/^$manu/i) {
 				$desc = $prod;
 			}
 			else {
 				$desc = "$manu $prod";
-			}
-		}
-		elsif ($bus eq 'pcmcia') {
-			my ($prod1, $prod2) = @{ $i{$if} }{ 'prod_id1', 'prod_id2' };
-
-			if ($prod2 =~ m/^$prod1/i) {
-				$desc = $prod2;
-			}
-			else {
-				$desc = "$prod1 $prod2";
 			}
 		}
 		elsif ($bus eq 'virtio') {

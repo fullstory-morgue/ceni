@@ -4,9 +4,9 @@ ceni (2.32) UNRELEASED; urgency=medium
   * NOT RELEASED YET
 
   [ Niall Walsh ]
-  * udevadm output changed, no longer giving type anywhere tweak Backend.pm
+  * udevadm output changed, need to call twice and dig mac from sysfs
 
- -- Niall Walsh <niallwalsh@celtux.org>  Thu, 18 Jun 2015 01:21:22 +0100
+ -- Niall Walsh <niallwalsh@celtux.org>  Thu, 18 Jun 2015 04:45:17 +0100
 
 ceni (2.31) unstable; urgency=medium
 
