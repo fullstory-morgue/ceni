@@ -70,7 +70,7 @@ sub nic_info {
 		}
 		close $udevinfo;
 
-		if ($i{$if}{'type'} == 1 and $i{$if}{'subsystems'}) {
+		if ($i{$if}{'subsystems'}) {
 			$bus = $i{$if}{'subsystems'};
 			$i{$if}{'connection_type'} =
 			        $self->is_iface_wireless($if) ? 'wireless' : 'ethernet';
