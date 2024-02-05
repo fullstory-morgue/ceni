@@ -17,6 +17,7 @@ Depends: ${misc:Depends},
  libcurses-ui-perl,
  libexpect-perl,
  libterm-readkey-perl,
+ libfile-which-perl,
  ifupdown,
  udev,
  wpasupplicant

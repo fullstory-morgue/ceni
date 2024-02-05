@@ -1,7 +1,12 @@
 ceni (2.34) ORPHANED; urgency=medium
 
+  [ Stefan Lippers-Hollmann ]
   * NOT RELEASED YET
   * ORHPAN PACKAGE.
+
+  [ Kel Modderman ]
+  * Depend on libfile-which-perl and call File::Which::which() to find
+    udevadm executable in PATH. (Closes: #968460)
 
  -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed, 02 Sep 2015 20:46:53 +0200
 

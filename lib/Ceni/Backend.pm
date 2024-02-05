@@ -8,6 +8,7 @@ use Data::Dumper;
 use Expect;
 use Fcntl 'O_RDONLY';
 use Tie::File;
+use File::Which qw( which );
 
 our $VERSION = '1';
 
@@ -31,15 +32,6 @@ sub is_iface_wireless {
 	if (-d "/sys/class/net/$iface/phy80211") {
 		$retval++;
 	}
-	elsif (-x "/sbin/iwgetid") {
-		open my $iwgetid, '-|', "/sbin/iwgetid --protocol " . $iface
-		        or carp "W: could not execute iwgetid --protocol $iface: $!";
-		while (<$iwgetid>) {
-			chomp;
-			m/^$iface/ and $retval++;
-		}
-		close $iwgetid;
-	}
 
 	return $retval;
 }
@@ -48,7 +40,7 @@ sub nic_info {
 	my ($self) = (shift);
 
 	my %i;
-	my $udevinfo_cmd = (-x '/sbin/udevadm') ? '/sbin/udevadm info' : 'udevinfo';
+	my $udevinfo_cmd = which 'udevadm';
 
 	$i{$_}{'sysfs'} = '/sys/class/net/' . $_ for map {
 		s|.*/||;
@@ -58,8 +50,8 @@ sub nic_info {
 	for my $if (sort keys %i) {
 		my ($bus, $desc);
 
-		open my $udevinfo, '-|', "$udevinfo_cmd -a -p " . $i{$if}{'sysfs'}
-		        or carp "E: could not execute $udevinfo_cmd -a -p "
+		open my $udevinfo, '-|', "$udevinfo_cmd info -a -p " . $i{$if}{'sysfs'}
+		        or carp "E: could not execute $udevinfo_cmd info -a -p "
 		        . $i{$if}{'sysfs'} . ": $!";
 		while (<$udevinfo>) {
 			chomp;
@@ -82,8 +74,8 @@ sub nic_info {
 			next;
 		}
 
-		open $udevinfo, '-|', "$udevinfo_cmd -p " . $i{$if}{'sysfs'}
-		        or carp "E: could not execute $udevinfo_cmd -p "
+		open $udevinfo, '-|', "$udevinfo_cmd info -p " . $i{$if}{'sysfs'}
+		        or carp "E: could not execute $udevinfo_cmd info -p "
 		        . $i{$if}{'sysfs'} . ": $!";
 		while (<$udevinfo>) {
 			chomp;
